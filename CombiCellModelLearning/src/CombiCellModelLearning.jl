@@ -1,9 +1,11 @@
-module PulsatileModelLearning
+module CombiCellModelLearning
 
 # using JunTools
 using XLSX
 using Statistics
 using JLD2
+using CSV
+using DataFrames
 using DataStructures
 using ComponentArrays
 using OrdinaryDiffEq
@@ -118,19 +120,19 @@ include("define_input_functions.jl")
 # Include shared model functions first (needed by individual model files)
 # Functions are defined at module level, so they'll be available to model files
 
-include("models/define_model5.jl")
-include("models/define_model6.jl")
-include("models/define_model7.jl")
+# include("models/define_model5.jl")
+# include("models/define_model6.jl")
+# include("models/define_model7.jl")
 
-include("models/define_model8.jl")
+# include("models/define_model8.jl")
 
-include("models/define_modelF6.jl")
-include("models/define_modelF7.jl")
-include("models/define_modelF8.jl")
+# include("models/define_modelF6.jl")
+# include("models/define_modelF7.jl")
+# include("models/define_modelF8.jl")
 
-include("models/define_modelF8a.jl")
-include("models/define_modelF8b.jl")
-
+# include("models/define_modelF8a.jl")
+# include("models/define_modelF8b.jl")
+include("models/define_modelCombi_flexO1O2.jl")
 
 # Model Factory Registry
 ## -----------------
@@ -191,15 +193,16 @@ end
 
 # Register available models
 function _register_default_models!()
-    register_model!("MyModel8", make_MyModel8; description="DI-IFFL model")
-    register_model!("Model5", make_Model5; description="Linear architecture with production-promotion")
-    register_model!("Model6", make_Model6; description="Linear with decay-inhibition")
-    register_model!("Model7", make_Model7; description="Incoherent feedforward")
-    register_model!("ModelF6", make_ModelF6; supports_flexi_dofs=true, description="Linear with decay-inhibition and flexi function")
-    register_model!("ModelF7", make_ModelF7; supports_flexi_dofs=true, description="Linear architecture with production-promotion and flexi function")
-    register_model!("ModelF8", make_ModelF8; supports_flexi_dofs=true, description="DI-IFFL with flexi functions in m-PP and m-DI")
-    register_model!("ModelF8a", make_ModelF8a; supports_flexi_dofs=true, description="DI-IFFL with flexi functions in m-PP and m-DI (copy of ModelF8)")
-    register_model!("ModelF8b", make_ModelF8b; supports_flexi_dofs=true, description="DI-IFFL with flexi functions in m-PP and m-DI (copy of ModelF8)")
+    register_model!("ModelCombi_flexO1O2", make_ModelCombi_flexO1O2; supports_flexi_dofs=true, description="CombiCell algebraic model with flexi functions for O1 and O2")
+    # register_model!("MyModel8", make_MyModel8; description="DI-IFFL model")
+    # register_model!("Model5", make_Model5; description="Linear architecture with production-promotion")
+    # register_model!("Model6", make_Model6; description="Linear with decay-inhibition")
+    # register_model!("Model7", make_Model7; description="Incoherent feedforward")
+    # register_model!("ModelF6", make_ModelF6; supports_flexi_dofs=true, description="Linear with decay-inhibition and flexi function")
+    # register_model!("ModelF7", make_ModelF7; supports_flexi_dofs=true, description="Linear architecture with production-promotion and flexi function")
+    # register_model!("ModelF8", make_ModelF8; supports_flexi_dofs=true, description="DI-IFFL with flexi functions in m-PP and m-DI")
+    # register_model!("ModelF8a", make_ModelF8a; supports_flexi_dofs=true, description="DI-IFFL with flexi functions in m-PP and m-DI (copy of ModelF8)")
+    # register_model!("ModelF8b", make_ModelF8b; supports_flexi_dofs=true, description="DI-IFFL with flexi functions in m-PP and m-DI (copy of ModelF8)")
 end
 
 # Initialize the registry when module loads
@@ -207,7 +210,7 @@ _register_default_models!()
 
 ## -----------------
 
-include("get_freq_response.jl")
+# include("get_freq_response.jl")
 include("get_loss.jl")
 
 # New unified learning protocols (split into separate files)
@@ -221,6 +224,6 @@ include("get_metrics.jl")
 
 include("generate_masks.jl")
 include("plotting.jl")
-include("timeseries_analysis.jl")
+# include("timeseries_analysis.jl")
 
-end # module PulsatileModelLearning
+end # module CombiCellModelLearning

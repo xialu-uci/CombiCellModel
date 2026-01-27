@@ -1,4 +1,4 @@
-name = "PulsatileModelLearning"
+name = "CombiCellModelLearning"
 uuid = "646df1e1-a44d-4a07-a424-54e775417e08"
 authors = ["Jun Allard <jun.allard@uci.edu>"]
 version = "0.1.1"
@@ -6,6 +6,7 @@ version = "0.1.1"
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
@@ -39,6 +40,7 @@ XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [compat]
 CairoMakie = "0.15"
+CSV = "0.10"
 ComponentArrays = "0.15"
 DataFrames = "1.7.0"
 DataStructures = "0.18"
