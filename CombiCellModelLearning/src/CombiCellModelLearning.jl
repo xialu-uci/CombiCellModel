@@ -103,13 +103,13 @@ abstract type AbstractModel end # stores which model, and also parameter values
 include("shared_model_functions.jl")
 
 @with_kw struct LearningProblem{M<:AbstractModel}
-    on_times::Vector{Float32}
-    off_times::Vector{Any}
-    c24_data::Matrix{Float64}
+   #  on_times::Vector{Float32}
+    # off_times::Vector{Any}
+    data::Dict{String, Vector{Float64}} # modified to match data structure
     p_repr_lb::ComponentArray{Float64}
     p_repr_ub::ComponentArray{Float64}
     model::M
-    continuous_pulses::Bool
+    # continuous_pulses::Bool
     mask::Matrix{Bool}
     loss_strategy::String = "masked_normalized"
 end
