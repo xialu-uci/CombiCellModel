@@ -74,18 +74,19 @@ function generate_mask(config,data)
         @load file_path masks
         mask = masks[config["mask_id"]]
 
-        if size(mask) != size(data)
+        if size(mask) != size(data["x"])
             error("Mask size $(size(mask)) does not match data size $(size(data))")
         end
     else
         # construct mask that excludes some on_time,off_time pairs from SSR
-        mask = trues(size(data))
-        for pair in config["mask_pairs"]
-            mask[pair[1], pair[2]] = false
+        mask = trues(size(data["x"]))
+        for key in data.keys()
+            data[key] = data[key][mask] # updated for dict data structure
         end
     end
     return mask
 end
+
 
 
 # masks = load(joinpath("assets", "kfold_masks.jld2"), "masks")

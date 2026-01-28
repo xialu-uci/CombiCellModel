@@ -110,7 +110,8 @@ include("shared_model_functions.jl")
     p_repr_ub::ComponentArray{Float64}
     model::M
     # continuous_pulses::Bool
-    mask::Matrix{Bool}
+    # mask::Matrix{Bool}
+    mask::Vector{Bool} # modified to match data structure
     loss_strategy::String = "masked_normalized"
 end
 

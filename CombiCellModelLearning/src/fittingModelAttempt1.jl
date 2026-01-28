@@ -5,7 +5,7 @@ model = CombiCellModelLearning.create_model("ModelCombi_flexO1O2"; flexi_dofs=50
 data = CombiCellModelLearning.get_data()
 
 # mask some rows (train/test split)
-# shape = size(data["x"]);
+shape = size(data["x"]);
 # mask = trues(shape) # hard code for now
 # #randomly mask 20% of the data # got to make changes to generate_mask.jl # is this ok instead of k fold?
 # using Random
@@ -33,15 +33,15 @@ data = CombiCellModelLearning.get_data()
 # TODO: learn parameters without the existing PulsatileModelLearning code for now
 params_repr_ig = deepcopy(model.params_repr_ig)
 # TODO: update get_loss(), forward_combi() (forward combi maybe ok)
-params_derepresented = CombiCellModelLearning.derepresent_all(params_repr_ig, model)
-O1_pred, O2_pred = CombiCellModelLearning.forward_combi(train_data["x"], train_data["KD"], params_derepresented)
+# params_derepresented = CombiCellModelLearning.derepresent_all(params_repr_ig, model)
+# O1_pred, O2_pred = CombiCellModelLearning.forward_combi(train_data["x"], train_data["KD"], params_derepresented)
 
 # vanilla SSR loss on training data
-loss_ig = sum((O1_pred .- train_data["O1_00"]) .^ 2) + sum((O2_pred .- train_data["O2_00"]) .^ 2)
+# loss_ig = sum((O1_pred .- train_data["O1_00"]) .^ 2) + sum((O2_pred .- train_data["O2_00"]) .^ 2)
 
 
 
-println("Initial guess loss: $loss_ig")
+# println("Initial guess loss: $loss_ig") # this all workded first time
 
 # will need for loop with some rounds of cmaes and some rounds of simplex
 # using CMAEvolutionStrategy
@@ -84,7 +84,7 @@ my_notebook_config = Dict(
     
     # K-fold or train/test split
     "kfold_splits" => 6,          # Number of folds
-    "mask_fold_id" => 1,          # jun uses 0 for time stuff, may need to rewrite generate_mask.jl accordingly 
+    "mask_id" => 1,          # jun uses 0 for time stuff, may need to rewrite generate_mask.jl accordingly 
     
     # Hyperparameters (optional, can use defaults)
     "cmaes_hyperparams" => Dict(),
@@ -95,13 +95,15 @@ my_notebook_config = Dict(
 
 mask = CombiCellModelLearning.generate_mask(my_notebook_config, data)
 
+params_repr_upperbounds = 
+
 # make learning problem
 learning_problem = CombiCellModelLearning.LearningProblem(;
-    p_repre_lb = model.params_repr_lowerbounds,
-    p_repre_ub = model.params_repr_upperbounds,
+    p_repr_lb = CombiCellModelLearning.represent(model.p_derepresented_lowerbounds, model),
+    p_repr_ub = CombiCellModelLearning.represent(model.p_derepresented_upperbounds, model), # represent_on_type passed through represent
     model=model,
     data=data,
-    mask=mask,
+    mask=mask, # mask = mask
 )
 
 curr_params = deepcopy(params_repr_ig)

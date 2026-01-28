@@ -90,6 +90,7 @@ model = PulsatileModelLearning.create_model(my_config["model_name"]; flexi_dofs=
 # construct mask that excludes certain on_time,off_time pairs from SSR, either for outlier rejection or k-fold cross-validation
 mask = PulsatileModelLearning.generate_mask(my_config, c24_data)
 
+#TODO: Modify learning problem to match new data structure (no time!)
 learning_problem = LearningProblem(;
     on_times=on_times,
     off_times=off_times,
