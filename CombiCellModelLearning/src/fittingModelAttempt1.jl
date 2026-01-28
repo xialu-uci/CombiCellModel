@@ -5,27 +5,27 @@ model = CombiCellModelLearning.create_model("ModelCombi_flexO1O2"; flexi_dofs=50
 data = CombiCellModelLearning.get_data()
 
 # mask some rows (train/test split)
-shape = size(data["x"]);
-mask = trues(shape) # hard code for now
-#randomly mask 20% of the data # got to make changes to generate_mask.jl # is this ok instead of k fold?
-using Random
-Random.seed!(42)
-num_elements = prod(shape)
-num_mask = round(Int, 0.2 * num_elements)
-mask_indices = randperm(num_elements)[1:num_mask]
-for idx in mask_indices
-    mask[idx] = false
-end
-train_data = Dict{String, Any}()
-test_data = Dict{String, Any}()
-for (key, value) in data
-    train_data[key] = value[mask]
-    test_data[key] = value[.!mask]
-end
+# shape = size(data["x"]);
+# mask = trues(shape) # hard code for now
+# #randomly mask 20% of the data # got to make changes to generate_mask.jl # is this ok instead of k fold?
+# using Random
+# Random.seed!(42)
+# num_elements = prod(shape)
+# num_mask = round(Int, 0.2 * num_elements)
+# mask_indices = randperm(num_elements)[1:num_mask]
+# for idx in mask_indices
+#     mask[idx] = false
+# end
+# train_data = Dict{String, Any}()
+# test_data = Dict{String, Any}()
+# for (key, value) in data
+#     train_data[key] = value[mask]
+#     test_data[key] = value[.!mask]
+# end
 
-# print sizes of train and test data
-println("Train data size: $(length(train_data["x"]))")
-println("Test data size: $(length(test_data["x"]))") 
+# # print sizes of train and test data
+# println("Train data size: $(length(train_data["x"]))")
+# println("Test data size: $(length(test_data["x"]))") 
 
 # ok I think it's good to this point.
 
@@ -46,7 +46,7 @@ println("Initial guess loss: $loss_ig")
 # will need for loop with some rounds of cmaes and some rounds of simplex
 # using CMAEvolutionStrategy
 
-# TODO: will want to use .load_cmaes_hyperparams from PulsatileModelLearning.jl? having difficulyt finding
+# TODO: will want to use .load_cmaes_hyperparams from PulsatileModelLearning.jl? having difficulty finding
 # CMAES hyperparameters
     # "cmaes_hyperparams" => Dict(
         # "c_1" => 0.0,
@@ -69,6 +69,10 @@ println("Initial guess loss: $loss_ig")
 
 # now let's see if we can generate k fold masks and load them properly
 CombiCellModelLearning.generate_kfold_masks(shape, 6) # 72 div by 6 
+# ok yes that worked
+
+# now make a config?
+
 
 # mask = CombiCellModelLearning.generate_mask
 

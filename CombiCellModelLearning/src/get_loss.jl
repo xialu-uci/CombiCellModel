@@ -1,8 +1,11 @@
 
 function get_loss(p_repr; learning_problem::LearningProblem{M}) where {M<:AbstractModel}
     # TODO: loss strategy must be different from pulsatile model learning
-    # params_derepresented = derepresent_all(p_repr, learning_problem.model)
-
+    params_derepresented = derepresent_all(p_repr, learning_problem.model)
+    x = learning_problem.data["x"]
+    KD = learning_problem.data["KD"]
+    O1_00 = learning_problem.data["O1_00"]
+    O2_00 = learning_problem.data["O2_00"]
     # c24_normalized = get_freq_response(
     #     learning_problem.on_times, 
     #     learning_problem.off_times, 
@@ -10,6 +13,8 @@ function get_loss(p_repr; learning_problem::LearningProblem{M}) where {M<:Abstra
     #     learning_problem.model; 
     #     continuous_pulses=learning_problem.continuous_pulses,    
     #     )
+
+    
 
     # if learning_problem.loss_strategy == "vanilla"
     #     # VANILLA SSR
@@ -70,12 +75,12 @@ function get_loss(p_repr; learning_problem::LearningProblem{M}) where {M<:Abstra
 
     # return ssr
 
-    # attempt 1: new loss strat
+    # attempt 1: new loss strat vanilla
     params_derepresented = derepresent_all(p_repr, learning_problem.model)
-    O1_pred, O2_pred = forward_combi(learning_problem.x_data, params_derepresented)  # Assume x_data is your input concentrations
+    O1_00_pred, O2_00_pred = forward_combi(x, KD, params_derepresented) # TODO: Test 
     # Compute loss against learning_problem.O1_data and O2_data
-    loss = sum((O1_pred .- learning_problem.O1_data).^2) + sum((O2_pred .- learning_problem.O2_data).^2)
-    return loss
+    ssr = sum((O1_00_pred .- O1_00).^2) + sum((O2_00_pred .- O2_00).^2)
+    return ssr
 
 end
 

@@ -177,7 +177,7 @@ function learn(protocol::CMAESProtocol, learning_problem, p_repr_ig;
     end
     
     sol = solve(prob, Evolutionary.CMAES(; cmaes_options...); 
-                callback=callback, maxiters=protocol.maxiters)
+                callback=callback, maxiters=protocol.maxiters) # num iteration fed to here. also track best
 
     # Determine which solution to return: initial guess vs best found vs final solution
     final_loss_from_sol = flexi_loss(collect(sol.minimizer), nothing)

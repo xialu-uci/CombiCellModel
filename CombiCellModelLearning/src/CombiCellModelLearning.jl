@@ -210,7 +210,7 @@ _register_default_models!()
 
 ## -----------------
 
-# include("get_freq_response.jl")
+include("forward_combi.jl")
 include("get_loss.jl")
 
 # New unified learning protocols (split into separate files)

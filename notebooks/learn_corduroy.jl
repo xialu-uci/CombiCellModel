@@ -58,7 +58,7 @@ my_notebook_config = Dict(
     ),
 )
 
-my_config = PulsatileModelLearning.get_config(ARGS, my_notebook_config)
+my_config = PulsatileModelLearning.get_config(ARGS, my_notebook_config) # where does ARGS come from?
 
 base_path = pwd()  # Repository root for loading experimental data
 data_path = PulsatileModelLearning.get_experiment_data_path()  # experiments/YYMMDD/data/
@@ -231,7 +231,7 @@ if my_config["maxiters_outer"] > 0
         cmaes_protocol = PulsatileModelLearning.CMAESProtocol(
             maxiters=my_config["maxiters_cmaes"];
             cmaes_params...
-        )
+        ) # in cmaes protocol, says how many iterations of cmaes to do
         @time result = PulsatileModelLearning.learn(cmaes_protocol, learning_problem, current_params)
         current_params, cmaes_loss_history = result["parameters"], result["loss_history"]
 
@@ -268,7 +268,7 @@ if my_config["maxiters_outer"] > 0
         simplex_protocol = PulsatileModelLearning.SimplexProtocol(
             maxiters=my_config["maxiters_simplex"];
             simplex_params...
-        )
+        ) # in simplex protocol, says how many iterations of simplex to do
         @time result = PulsatileModelLearning.learn(simplex_protocol, learning_problem, current_params)
         current_params, simplex_loss_history = result["parameters"], result["loss_history"]
 
