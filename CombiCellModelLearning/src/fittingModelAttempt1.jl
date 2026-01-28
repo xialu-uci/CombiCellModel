@@ -72,20 +72,99 @@ CombiCellModelLearning.generate_kfold_masks(shape, 6) # 72 div by 6
 # ok yes that worked
 
 # now make a config?
+my_notebook_config = Dict(
+    "run_name" => "attempt1_run1",
+    "model_name" => "ModelCombi_flexO1O2",
+    "flexi_dofs" => 50,
+    
+    # Optimization iterations
+    "maxiters_outer" => 3,        # How many CMAES↔Simplex rounds
+    "maxiters_cmaes" => 5,        # Iterations per CMAES round
+    "maxiters_simplex" => 10,     # Iterations per Simplex round
+    
+    # K-fold or train/test split
+    "kfold_splits" => 6,          # Number of folds
+    "mask_fold_id" => 1,          # jun uses 0 for time stuff, may need to rewrite generate_mask.jl accordingly 
+    
+    # Hyperparameters (optional, can use defaults)
+    "cmaes_hyperparams" => Dict(),
+    "simplex_hyperparams" => Dict(),
+)
 
+# actually generate mask 
+
+mask = CombiCellModelLearning.generate_mask(my_notebook_config, data)
+
+# make learning problem
+learning_problem = CombiCellModelLearning.LearningProblem(;
+    p_repre_lb = model.params_repr_lowerbounds,
+    p_repre_ub = model.params_repr_upperbounds,
+    model=model,
+    data=data,
+    mask=mask,
+)
+
+curr_params = deepcopy(params_repr_ig)
+
+for round in 1:my_notebook_config["maxiters_outer"]
+
+    # cmaes optimization
+    cmaes_protocol = CombiCellModelLearning.CMAESProtocol(
+        maxiters=my_notebook_config["maxiters_cmaes"],
+        mu=my_notebook_config["flexi_dofs"],
+        lambda=2 * my_notebook_config["flexi_dofs"],
+        c_1=0.0,
+        c_c=0.0,
+        c_mu=0.0,
+        c_sigma=0.0,
+        c_m=1.0,
+        sigma0=-1,
+    )
+    # pass current params "ig" to cmaes
+    result_cmaes = CombiCellModelLearning.learn(cmaes_protocol, learning_problem, curr_params; logging=true)
+    # get best params from cmaes, save loss history
+    best_params_cmaes = result_cmaes["parameters"]
+    loss_history_cmaes = result_cmaes["loss_history"]
+    println("Final loss after CMA-ES round $round: $(loss_history_cmaes[end])")
+    # update params
+    curr_params = best_params_cmaes 
+ 
+   
+  # simplex optimization
+    simplex_protocol = CombiCellModelLearning.SimplexProtocol(
+        maxiters=my_notebook_config["maxiters_simplex"],
+    )
+        # pass current params to simplex
+        result_simplex = CombiCellModelLearning.learn(simplex_protocol, learning_problem, curr_params; logging=true)
+        # get best params from simplex, save loss history
+        best_params_simplex = result_simplex["parameters"]
+        loss_history_simplex = result_simplex["loss_history"]
+        println("Final loss after Simplex round $round: $(loss_history_simplex[end])")
+        # update params
+        curr_params = best_params_simplex
+
+end
+
+# plot loss history from all rounds
+using Plots
+loss_history_total = vcat(loss_history_cmaes, loss_history_simplex)
+plot(loss_history_total, yscale=:log10, xlabel="Iteration", ylabel="Loss", title="CMA-ES + Simplex Loss History");
+savefig("attempt1_loss_history.png")
 
 # mask = CombiCellModelLearning.generate_mask
 
-cmaes_protocol = CombiCellModelLearning.CMAESProtocol()
+
+# cmaes_protocol = CombiCellModelLearning.CMAESProtocol()
 
 # function learn(protocol::CMAESProtocol, learning_problem, p_repr_ig; 
                # logging::Bool=false, callback_config::CallbackConfig=CallbackConfig())
     
 
-result = CombiCellModelLearning.learn(cmaes_protocol, train_data, params_repr_ig, model)
-best_params, loss_history = result["parameters"], result["loss_history"]
-println("Final loss after CMA-ES: $(loss_history[end])")
-# plot loss history
-using Plots
-plot(loss_history, yscale=:log10, xlabel="Iteration", ylabel="Loss", title="CMA-ES Loss History");
+# result = CombiCellModelLearning.learn(cmaes_protocol, train_data, params_repr_ig, model)
+# best_params, loss_history = result["parameters"], result["loss_history"]
+# println("Final loss after CMA-ES: $(loss_history[end])")
+# # plot loss history
+# using Plots
+# plot(loss_history, yscale=:log10, xlabel="Iteration", ylabel="Loss", title="CMA-ES Loss History");
+
 
