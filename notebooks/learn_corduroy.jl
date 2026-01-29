@@ -178,7 +178,7 @@ if my_config["maxiters_outer"] > 0
         # Use generic conversion system - automatically detects source model from config
         source_model = source_config["model_name"]
         dest_model = my_config["model_name"]
-        pretrained_ig_for_cmaes, loss_pretraining = PulsatileModelLearning.convert_model(source_model, dest_model, best_p_repr; flexi_dofs=my_config["flexi_dofs"])
+        pretrained_ig_for_cmaes, loss_pretraining = PulsatileModelLearning.convert_model(source_model, dest_model, best_p_repr; flexi_dofs=my_config["flexi_dofs"]) # cppies the ig from classical and adds the flexi_dof * numFlex to the structure
 
         @show pretrained_ig_for_cmaes
 
@@ -225,7 +225,7 @@ if my_config["maxiters_outer"] > 0
         if haskey(current_params, :flex2_params)
             println("  Flexi2 param sum: $(sum(abs.(current_params.flex2_params)))")
         end
-        bounds_violations = PulsatileModelLearning.check_parameter_bounds(current_params, learning_problem.model, "Pre-CMAES-R$round", "before_cmaes")
+        bounds_violations = PulsatileModelLearning.check_parameter_bounds(current_params, learning_problem.model, "Pre-CMAES-R$round", "before_cmaes") # stops if bounds violations found
 
         # Load CMAES hyperparameters from config
         cmaes_params = PulsatileModelLearning.load_cmaes_hyperparams(my_config)

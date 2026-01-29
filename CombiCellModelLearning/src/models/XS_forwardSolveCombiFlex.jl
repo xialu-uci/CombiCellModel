@@ -1,6 +1,6 @@
 # attempt 1: forward solve combicell system withFlexiFunctions
 
-# using .FlexiFunctions
+using FlexiFunctions
 
 # define params
 

@@ -78,9 +78,9 @@ my_notebook_config = Dict(
     "flexi_dofs" => 50,
     
     # Optimization iterations
-    "maxiters_outer" => 3,        # How many CMAES↔Simplex rounds
-    "maxiters_cmaes" => 5,        # Iterations per CMAES round
-    "maxiters_simplex" => 10,     # Iterations per Simplex round
+    "maxiters_outer" => 1,        # How many CMAES↔Simplex rounds
+    "maxiters_cmaes" => 3,        # Iterations per CMAES round
+    "maxiters_simplex" => 3,     # Iterations per Simplex round
     
     # K-fold or train/test split
     "kfold_splits" => 6,          # Number of folds
@@ -107,8 +107,15 @@ learning_problem = CombiCellModelLearning.LearningProblem(;
 )
 
 curr_params = deepcopy(params_repr_ig)
+loss_history= []
 
 for round in 1:my_notebook_config["maxiters_outer"]
+
+    global curr_params
+
+    local loss_history_cmaes
+    local loss_history_simplex
+    
 
     # cmaes optimization
     cmaes_protocol = CombiCellModelLearning.CMAESProtocol(
@@ -125,12 +132,16 @@ for round in 1:my_notebook_config["maxiters_outer"]
     # pass current params "ig" to cmaes
     result_cmaes = CombiCellModelLearning.learn(cmaes_protocol, learning_problem, curr_params; logging=true)
     # get best params from cmaes, save loss history
-    best_params_cmaes = result_cmaes["parameters"]
-    loss_history_cmaes = result_cmaes["loss_history"]
-    println("Final loss after CMA-ES round $round: $(loss_history_cmaes[end])")
+    # best_params_cmaes = result_cmaes["parameters"]
+    # loss_history_cmaes = result_cmaes["loss_history"]
     # update params
-    curr_params = best_params_cmaes 
- 
+    curr_params, cmaes_loss_history = result_cmaes["parameters"], result_cmaes["loss_history"]    # update params
+
+    println("Final loss after CMA-ES round $round: $(cmaes_loss_history[end])")
+
+    # accumulate loss history
+    append!(loss_history, cmaes_loss_history)
+    # TODO: bounds violations later
    
   # simplex optimization
     simplex_protocol = CombiCellModelLearning.SimplexProtocol(
@@ -139,11 +150,16 @@ for round in 1:my_notebook_config["maxiters_outer"]
         # pass current params to simplex
         result_simplex = CombiCellModelLearning.learn(simplex_protocol, learning_problem, curr_params; logging=true)
         # get best params from simplex, save loss history
-        best_params_simplex = result_simplex["parameters"]
-        loss_history_simplex = result_simplex["loss_history"]
-        println("Final loss after Simplex round $round: $(loss_history_simplex[end])")
+        # best_params_simplex = result_simplex["parameters"]
+        # loss_history_simplex = result_simplex["loss_history"]
+        # println("Final loss after Simplex round $round: $(loss_history_simplex[end])")
         # update params
-        curr_params = best_params_simplex
+        curr_params, simplex_loss_history = result_simplex["parameters"], result_simplex["loss_history"]
+        println("Final loss after Simplex round $round: $(simplex_loss_history[end])")
+        # accumulate loss history
+        append!(loss_history, simplex_loss_history)
+
+        # TODO: throw in the bounds violations VERY NECESSARY
 
 end
 
