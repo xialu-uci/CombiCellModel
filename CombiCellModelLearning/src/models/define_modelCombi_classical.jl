@@ -1,4 +1,4 @@
-struct ModelCombiFlex <: AbstractFlexiModel
+struct ModelCombiClassic <: AbstractFlexiModel
     p_classical_derepresented_ig::ComponentArray{Float64} # classical parameters
     p_derepresented_lowerbounds::ComponentArray{Float64} # lower bounds for derepresented parameters
     p_derepresented_upperbounds::ComponentArray{Float64} # upper bounds for derepresented parameters
@@ -7,7 +7,7 @@ struct ModelCombiFlex <: AbstractFlexiModel
     params_derepresented_ig::ComponentArray{Float64}
 end
 
-function make_ModelCombi_flexO1O2(; flexi_dofs=5)
+function make_ModelCombiClassic(; flexi_dofs=5)
     p_classical_derepresented_ig = ComponentArray(
         fI=0.5,
         alpha=1e6,
@@ -60,15 +60,15 @@ function make_ModelCombi_flexO1O2(; flexi_dofs=5)
     u0 = [0.0]
 
     params_repr_ig = ComponentArray(
-        p_classical=represent_on_type(p_classical_derepresented_ig, ModelCombiFlex),
-        flex1_params=FlexiFunctions.generate_flexi_ig(flexi_dofs),
-        flex2_params=FlexiFunctions.generate_flexi_ig(flexi_dofs),
+        p_classical=represent_on_type(p_classical_derepresented_ig, ModelCombiClassic),
+        # no flex
+        
     )
 
     params_derepresented_ig = ComponentArray(
         p_classical=deepcopy(p_classical_derepresented_ig),
-        flex1_params=FlexiFunctions.generate_flexi_ig(flexi_dofs),
-        flex2_params=FlexiFunctions.generate_flexi_ig(flexi_dofs),
+        # no flex
+        
     )
 
     return ModelCombiFlex(
@@ -97,8 +97,8 @@ function fw(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented)
         O1_val = XO1 / (XO1 + X)
         O2_val = X
 
-        O1i = O1max * abs(eval_flex(abs(O1_val), p_derepresented.flex1_params)) 
-        O2i = O2max * abs(eval_flex(abs(O2_val), p_derepresented.flex2_params))
+        O1i = O1max * O1_val 
+        O2i = O2max * O2_val
 
         push!(O1, O1i)
         push!(O2, O2i)
