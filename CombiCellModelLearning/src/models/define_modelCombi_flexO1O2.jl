@@ -81,7 +81,7 @@ function make_ModelCombi_flexO1O2(; flexi_dofs=5)
     )
 end
 
-function fw(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented)
+function fw(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::ModelCombiFlex)
     fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max = p_derepresented.p_classical
 
     O1 = Float64[]

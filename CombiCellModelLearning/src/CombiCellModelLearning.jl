@@ -133,6 +133,7 @@ include("define_input_functions.jl")
 
 # include("models/define_modelF8a.jl")
 # include("models/define_modelF8b.jl")
+include("models/define_modelCombi_classical.jl")
 include("models/define_modelCombi_flexO1O2.jl")
 
 # Model Factory Registry
