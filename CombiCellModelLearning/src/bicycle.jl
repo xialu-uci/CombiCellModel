@@ -64,12 +64,12 @@ end
 
 O1_sim_data, O2_sim_data = sim_data(x_for_sim, kD_for_sim, stdevs_for_sim, params_for_sim, true_fw)
 
-fakeData = ComponentArray(
-    x = x_for_sim,
-    kD = kD_for_sim,
+fakeData = Dict(
+    "x" => x_for_sim,
+    "KD" => kD_for_sim,
     # stdevs = stdevs_for_sim,
-    O1 = O1_sim_data,
-    O2 = O2_sim_data,
+    "O1_00" => O1_sim_data,
+    "O2_00" => O2_sim_data
 )
 
 # now let's make a classical model and try to fit parameters to the simulated data
@@ -94,7 +94,7 @@ learning_problem = CombiCellModelLearning.LearningProblem(
 function obj_func(x, p)
     p_repr = CombiCellModelLearning.reconstruct_learning_params_from_array(x, p_repr_ig, model) # this is where params are updated # the trick is the x is the actual params we want. 
     # only pass through p_repr_ig for the keys
-    return get_loss(p_repr; learning_problem=learning_problem)
+    return CombiCellModelLearning.get_loss(p_repr; learning_problem=learning_problem)
 end
 
 # initial guess params array
@@ -106,7 +106,7 @@ p = [1.0, 100.0] # not used in obj_func, honestly I think i could delete this bu
 
 # algo is the optimization algorithm (here bbo)
 # maxiters is maximum iterations
-maxiters = 30
+maxiters = 30000 # reduced for testing
 # callback is a function called at each iteration, s.t. optimzation stops if it returns true
 config = CallbackConfig() # just stores info for callback function in fields
 callback, loss_history = CombiCellModelLearning.create_bbo_callback_with_early_termination(

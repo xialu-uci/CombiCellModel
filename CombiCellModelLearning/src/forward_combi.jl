@@ -1,4 +1,4 @@
-function forward_combi(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented)
+function forward_combi(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model)
     # fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max = p_derepresented.p_classical
 
     # O1 = Float64[]
@@ -21,6 +21,7 @@ function forward_combi(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented)
     #     push!(O2, O2i)
     # end
     # return O1, O2
-    return fw(x, kD, p_derepresented)
+    
+    return fw(x, kD, p_derepresented, model)
 
 end
