@@ -9,15 +9,15 @@ end
 
 function make_ModelCombi_flexO1O2(; flexi_dofs=5)
     p_classical_derepresented_ig = ComponentArray(
-        fI=0.5,
-        alpha=1e6,
-        tT=1e3,
-        g1=1.0,
-        k_on_2d=30.0,
+        fI=0.6,
+        alpha=2e6,
+        tT=500.0,
+        g1=2.0,
+        k_on_2d=20.0,
         # kD=30.0, # TODO: this is given, figure out how to get it in here
-        kP=1.0,
-        nKP=2.7,
-        lambdaX=0.05,
+        kP=1.3,
+        nKP=3.0,
+        lambdaX=0.1,
         nC=4.0,
         XO1=1.0,
         O1max=0.95,

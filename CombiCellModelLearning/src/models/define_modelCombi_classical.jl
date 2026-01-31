@@ -1,4 +1,4 @@
-struct ModelCombiClassic <: AbstractFlexiModel
+struct ModelCombiClassic <: AbstractClassicalModel
     p_classical_derepresented_ig::ComponentArray{Float64} # classical parameters
     p_derepresented_lowerbounds::ComponentArray{Float64} # lower bounds for derepresented parameters
     p_derepresented_upperbounds::ComponentArray{Float64} # upper bounds for derepresented parameters
@@ -7,21 +7,20 @@ struct ModelCombiClassic <: AbstractFlexiModel
     params_derepresented_ig::ComponentArray{Float64}
 end
 
-function make_ModelCombiClassic(; flexi_dofs=5)
+function make_ModelCombiClassic(;)
     p_classical_derepresented_ig = ComponentArray(
         fI=0.5,
         alpha=1e6,
         tT=1e3,
-        g1=1.0,
-        k_on_2d=30.0,
-        # kD=30.0, # TODO: this is given, figure out how to get it in here
-        kP=1.0,
-        nKP=2.7,
-        lambdaX=0.05,
-        nC=4.0,
-        XO1=1.0,
-        O1max=0.95,
-        O2max=150.0,
+        g1=0.5,
+        k_on_2d=10.0,
+        kP=0.5,
+        nKP=2.0,
+        lambdaX=0.01,
+        nC=2.0,
+        XO1=0.5,
+        O1max=0.8,
+        O2max=100.0
     )
 
     p_derepresented_lowerbounds = ComponentArray(
@@ -71,7 +70,7 @@ function make_ModelCombiClassic(; flexi_dofs=5)
         
     )
 
-    return ModelCombiFlex(
+    return ModelCombiClassic(
         p_classical_derepresented_ig,
         p_derepresented_lowerbounds,
         p_derepresented_upperbounds,
@@ -89,7 +88,7 @@ function fw(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::Mod
     O1 = Float64[]
     O2 = Float64[]
 
-    eval_flex(x, p) = FlexiFunctions.evaluate_decompress(x, view(p, 1:length(p)))
+    # eval_flex(x, p) = FlexiFunctions.evaluate_decompress(x, view(p, 1:length(p)))
 
     for (xi, kDi) in zip(x, kD)
         CT = (alpha * xi + tT + g1 * kDi / k_on_2d - sqrt((alpha * xi + tT + g1 * kDi / k_on_2d)^2 - 4 * alpha * xi * tT)) / 2
@@ -135,7 +134,7 @@ end
 
 # end
 
-function represent_on_type(p_derepresented, model_by_type::Type{ModelCombiFlex})
+function represent_on_type(p_derepresented, model_by_type::Type{ModelCombiClassic})
     # initial transformations, subject to change
     return ComponentArray(
         fI=log(p_derepresented.fI),  # log
@@ -154,7 +153,7 @@ function represent_on_type(p_derepresented, model_by_type::Type{ModelCombiFlex})
     )
 end
 
-function derepresent(p_repr, model::ModelCombiFlex)
+function derepresent(p_repr, model::ModelCombiClassic)
     return ComponentArray(
         fI=1 / (1 + exp(-p_repr.fI)),  # sigmoid
         alpha=exp(p_repr.alpha),

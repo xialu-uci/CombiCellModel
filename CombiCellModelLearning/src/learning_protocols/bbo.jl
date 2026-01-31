@@ -19,9 +19,9 @@ function learn(protocol::BBOProtocol, learning_problem, p_repr_ig;
     classical_params_array = collect(values(copy(p_repr_ig.p_classical)))
 
     function classical_loss(x, p)
-        p_repr = reconstruct_learning_params_from_array(x, p_repr_ig, learning_problem.model)
+        p_repr = reconstruct_learning_params_from_array(x, p_repr_ig, learning_problem.model) # this is where params are updated
         return get_loss(p_repr; learning_problem=learning_problem)
-    end
+    end 
 
     prob = Optimization.OptimizationProblem(
         classical_loss,

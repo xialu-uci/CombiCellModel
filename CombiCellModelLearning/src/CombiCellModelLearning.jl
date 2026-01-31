@@ -196,6 +196,7 @@ end
 # Register available models
 function _register_default_models!()
     register_model!("ModelCombi_flexO1O2", make_ModelCombi_flexO1O2; supports_flexi_dofs=true, description="CombiCell algebraic model with flexi functions for O1 and O2")
+    register_model!("ModelCombi_classical", make_ModelCombiClassic; description="CombiCell algebraic model with classical functions")
     # register_model!("MyModel8", make_MyModel8; description="DI-IFFL model")
     # register_model!("Model5", make_Model5; description="Linear architecture with production-promotion")
     # register_model!("Model6", make_Model6; description="Linear with decay-inhibition")
