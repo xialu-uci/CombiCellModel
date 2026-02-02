@@ -124,7 +124,10 @@ prob = Optimization.OptimizationProblem(
 
 # solve optimization problem
 sol = solve(prob, BBO_adaptive_de_rand_1_bin(); callback=callback, maxiters=maxiters)
-final_params = CombiCellModelLearning.reconstruct_learning_params_from_array(sol.minimizer, p_repr_ig, learning_problem.model)
+final_params_repr = CombiCellModelLearning.reconstruct_learning_params_from_array(sol.minimizer, p_repr_ig, learning_problem.model)
+final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, learning_problem.model)
+
+# handle bounds violations
 
 # plot loss history
 using Plots 
@@ -133,8 +136,10 @@ plot(loss_history, xlabel="Iteration", ylabel="Loss", title="BBO Loss History") 
 savefig("bbo_loss_history.png")
 # print final params
 println("Final parameters found by BBO:")
-for (name, value) in zip(keys(final_params.p_classical), values(final_params.p_classical))
+for (name, value) in zip(keys(final_params_derepr.p_classical), values(final_params_derepr.p_classical))
     println("$name: $value")
 end
+
+
 
 
