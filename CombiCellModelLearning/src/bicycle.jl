@@ -33,7 +33,7 @@ params_for_sim = ComponentArray(
     nC=2.1,
     XO1=0.4,
     O1max=0.95,
-    O2max=120.0
+    O2max=110.0
 )
 
 
@@ -46,7 +46,7 @@ function true_fw(x::Vector{Float64}, kD::Vector{Float64}, params)
     O2 = Float64[]
 
     for (xi, kDi) in zip(x, kD)
-        CT = (alpha * xi + tT + g1 * kDi / k_on_2d - sqrt((alpha * xi + tT + g1 * kDi / k_on_2d)^2 - 4 * alpha * xi * tT)) / 2
+        CT = (1-fI) * (alpha * xi + tT + g1 * kDi / k_on_2d - sqrt((alpha * xi + tT + g1 * kDi / k_on_2d)^2 - 4 * alpha * xi * tT)) / 2
         CN = (1 / (1 + g1 * kDi / kP))^nKP * CT
         X = CN^nC / (lambdaX^nC + CN^nC)
 
@@ -74,6 +74,8 @@ fakeData = Dict(
 
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
+
+
 model = CombiCellModelLearning.make_ModelCombiClassic()
 p_repr_ig = deepcopy(model.params_repr_ig)
 # learning problem
@@ -126,7 +128,9 @@ final_params = CombiCellModelLearning.reconstruct_learning_params_from_array(sol
 
 # plot loss history
 using Plots 
-plot(loss_history, xlabel="Iteration", ylabel="Loss", title="BBO Loss History")
+plot(loss_history, xlabel="Iteration", ylabel="Loss", title="BBO Loss History") # to do check plot
+# save plot
+savefig("bbo_loss_history.png")
 # print final params
 println("Final parameters found by BBO:")
 for (name, value) in zip(keys(final_params.p_classical), values(final_params.p_classical))

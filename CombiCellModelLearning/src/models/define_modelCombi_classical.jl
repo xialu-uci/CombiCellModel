@@ -8,53 +8,56 @@ struct ModelCombiClassic <: AbstractClassicalModel
 end
 
 function make_ModelCombiClassic(;)
-    p_classical_derepresented_ig = ComponentArray(
+   # close initial guess 
+p_classical_derepresented_ig = ComponentArray(
         fI=0.5,
-        alpha=1e6,
-        tT=1e3,
-        g1=0.5,
-        k_on_2d=10.0,
-        kP=0.5,
-        nKP=2.0,
-        lambdaX=0.01,
-        nC=2.0,
-        XO1=0.5,
-        O1max=0.8,
-        O2max=100.0
+        alpha=1.9e6,
+        tT=600,
+        g1=0.8,
+        k_on_2d=14.0, #(12,16)
+        kP=0.5, #(0.3,0.7)
+        nKP=2.0, #(1.5,2.5)
+        lambdaX=0.08, #(0.03,0.1)
+        nC=2.0, #(1.5,2.5)
+        XO1=0.5, #(0.3,0.7)
+        O1max=0.8, #(0.7,1.0)
+        O2max=100.0 #(80,120)
     )
 
+
+    # tight bounds around true params
+
     p_derepresented_lowerbounds = ComponentArray(
-        fI=0.0,
-        alpha=1e4,
-        tT=1e2,
-        g1=0.1,
-        k_on_2d=1.0,
+        fI=0.3,
+        alpha=1.8e6,
+        tT=400,
+        g1=0.6,
+        k_on_2d=12.0,
         # kD=1.0, # TODO: this is given, figure out how to get it in here
-        kP=0.1,
-        nKP=1.0,
-        lambdaX=0.001,
-        nC=1.0,
-        XO1=0.1,
-        O1max=0.1,
-        O2max=1.0,
+        kP=0.3,
+        nKP=1.5,
+        lambdaX=0.03,
+        nC=1.5 ,
+        XO1=0.3,
+        O1max=0.7,
+        O2max=80.0,
     )
 
     p_derepresented_upperbounds = ComponentArray(
-        fI=1.0,
-        alpha=1e8,
-        tT=1e5,
-        g1=10.0,
-        k_on_2d=1e3,
+        fI= 0.7,
+        alpha=2.1e6,
+        tT=600.0,
+        g1=0.9,
+        k_on_2d=16.0,
         # kD=1e3, # TODO: this is given, figure out how to get it in here
-        kP=10.0,
-        nKP=5.0,
-        lambdaX=1.0,
-        nC=10.0,
-        XO1=10.0,
+        kP=0.7,
+        nKP=2.5,
+        lambdaX=0.1,
+        nC=2.5,
+        XO1=0.7,
         O1max=1.0,
-        O2max=1e4,
+        O2max=120.0,
     )
-
     # initial condition - not used
     u0 = [0.0]
 
@@ -91,7 +94,7 @@ function fw(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::Mod
     # eval_flex(x, p) = FlexiFunctions.evaluate_decompress(x, view(p, 1:length(p)))
 
     for (xi, kDi) in zip(x, kD)
-        CT = (alpha * xi + tT + g1 * kDi / k_on_2d - sqrt((alpha * xi + tT + g1 * kDi / k_on_2d)^2 - 4 * alpha * xi * tT)) / 2
+        CT = (1-fI)*(alpha * xi + tT + g1 * kDi / k_on_2d - sqrt((alpha * xi + tT + g1 * kDi / k_on_2d)^2 - 4 * alpha * xi * tT)) / 2
         CN = (1 / (1 + g1 * kDi / kP))^nKP * CT
         X = CN^nC / (lambdaX^nC + CN^nC)
 

@@ -90,7 +90,7 @@ function fw(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::Mod
     eval_flex(x, p) = FlexiFunctions.evaluate_decompress(x, view(p, 1:length(p)))
 
     for (xi, kDi) in zip(x, kD)
-        CT = (alpha * xi + tT + g1 * kDi / k_on_2d - sqrt((alpha * xi + tT + g1 * kDi / k_on_2d)^2 - 4 * alpha * xi * tT)) / 2
+        CT = (1-fI)*(alpha * xi + tT + g1 * kDi / k_on_2d - sqrt((alpha * xi + tT + g1 * kDi / k_on_2d)^2 - 4 * alpha * xi * tT)) / 2
         CN = (1 / (1 + g1 * kDi / kP))^nKP * CT
         X = CN^nC / (lambdaX^nC + CN^nC)
 
