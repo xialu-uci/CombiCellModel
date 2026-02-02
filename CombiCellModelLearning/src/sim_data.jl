@@ -11,7 +11,10 @@ function sim_data(x, kD, stdevs, params, true_fw)
     noise2 = randn(num_points) .* stdevs
     sim_O2_00 .= sim_O2_00 .+ noise2
 
-    (sim_O1_00, sim_O2_00)
+    
+
+
+    return sim_O1_00, sim_O2_00
 end
 
 
