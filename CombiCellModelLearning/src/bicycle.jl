@@ -3,6 +3,7 @@ using CombiCellModelLearning
 using ComponentArrays # i feel like I shouldn't need this in here...
 using Optimization
 using OptimizationBBO
+using Statistics
 # using OptimizationBBO
 
 include("sim_data.jl")
@@ -99,33 +100,39 @@ function obj_func(x, p)
     return CombiCellModelLearning.get_loss(p_repr; learning_problem=learning_problem)
 end
 
-# initial guess params array
-classical_params_array = collect(values(copy(p_repr_ig)))
+# let's make this whole section a function bbo_learn(learning_problem, p_repr_ig)
+function bbo_learn(learning_problem, p_repr_ig)
+    # initial guess params array
+    classical_params_array = collect(values(copy(p_repr_ig)))
 
-# p 
+    # p
+    p = [1.0, 100.0] # not used in obj_func, honestly I think i could delete this but will leave in for now and see if it changes anything later
 
-p = [1.0, 100.0] # not used in obj_func, honestly I think i could delete this but will leave in for now and see if it changes anything later
-
-# algo is the optimization algorithm (here bbo)
-# maxiters is maximum iterations
-maxiters = 30000 # reduced for testing
-# callback is a function called at each iteration, s.t. optimzation stops if it returns true
-config = CallbackConfig() # just stores info for callback function in fields
-callback, loss_history = CombiCellModelLearning.create_bbo_callback_with_early_termination(
+    # algo is the optimization algorithm (here bbo)
+    # maxiters is maximum iterations
+    maxiters = 30000 # reduced for testing
+    # callback is a function called at each iteration, s.t. optimzation stops if it returns true
+    config = CallbackConfig() # just stores info for callback function in fields
+    callback, loss_history = CombiCellModelLearning.create_bbo_callback_with_early_termination(
     config, maxiters)
 
-# create optimization problem
-prob = Optimization.OptimizationProblem(
-    obj_func,
-    classical_params_array,
-    p;
-    lb= learning_problem.p_repr_lb,
-    ub=learning_problem.p_repr_ub)
+    # create optimization problem
+    prob = Optimization.OptimizationProblem(
+        obj_func,
+        classical_params_array,
+        p;
+        lb= learning_problem.p_repr_lb,
+        ub=learning_problem.p_repr_ub)
 
-# solve optimization problem
-sol = solve(prob, BBO_adaptive_de_rand_1_bin(); callback=callback, maxiters=maxiters)
-final_params_repr = CombiCellModelLearning.reconstruct_learning_params_from_array(sol.minimizer, p_repr_ig, learning_problem.model)
-final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, learning_problem.model)
+    # solve optimization problem
+    sol = solve(prob, BBO_adaptive_de_rand_1_bin(); callback=callback, maxiters=maxiters)
+    final_params_repr = CombiCellModelLearning.reconstruct_learning_params_from_array(sol.minimizer, p_repr_ig, learning_problem.model)
+    final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, learning_problem.model)
+
+    return final_params_derepr, loss_history
+end
+
+final_params_derepr, loss_history = bbo_learn(learning_problem, p_repr_ig)
 
 # handle bounds violations
 
@@ -133,13 +140,66 @@ final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, 
 using Plots 
 plot(loss_history, xlabel="Iteration", ylabel="Loss", title="BBO Loss History") # to do check plot
 # save plot
-savefig("bbo_loss_history.png")
+savefig("bbo_loss_history_classic_noAccessory.png")
 # print final params
 println("Final parameters found by BBO:")
 for (name, value) in zip(keys(final_params_derepr.p_classical), values(final_params_derepr.p_classical))
     println("$name: $value")
 end
+# save true params and final params to file
+using JLD2
+@save "bbo_final_params_classic_noAccessory.jld2" final_params_derepr params_for_sim
 
 
+# let's make a function to plot fit results vs data
+function plot_fit_vs_data(fakeData, fitted_params, name)
+    x_data = fakeData["x"]
+    kD_data = fakeData["KD"]
+    O1_data = fakeData["O1_00"]
+    O2_data = fakeData["O2_00"]
+    O1_fit, O2_fit = true_fw(x_data, kD_data, fitted_params)
+    p1 = scatter(x_data, O1_data, label="O1 Data", xlabel="x", ylabel="O1_00", title="O1 Fit vs Data")
+    plot!(p1, x_data, O1_fit, label="O1 Fit", color=:red)
+    p2 = scatter(x_data, O2_data, label="O2 Data", xlabel="x", ylabel="O2_00", title="O2 Fit vs Data")
+    plot!(p2, x_data, O2_fit, label="O2 Fit", color=:red)
+    plot(p1, p2, layout=(2,1))
+    savefig(name)
+end
 
+function plot_error(fakeData, fitted_params, name)
+    x_data = fakeData["x"]
+    kD_data = fakeData["KD"]
+    O1_data = fakeData["O1_00"]
+    O2_data = fakeData["O2_00"]
+    O1_fit, O2_fit = true_fw(x_data, kD_data, fitted_params)
+    O1_error = abs.(O1_data .- O1_fit)
+    O2_error = abs.(O2_data .- O2_fit)
+    p1 = scatter(x_data, O1_error, label="O1 Error", xlabel="x", ylabel="|O1_00 Data - Fit|", title="O1 Error vs x")
+    p2 = scatter(x_data, O2_error, label="O2 Error", xlabel="x", ylabel="|O2_00 Data - Fit|", title="O2 Error vs x")
+    plot(p1, p2, layout=(2,1))
+    savefig(name)
+end
+
+# metrics of success
+function compute_metrics(fakeData, fitted_params, name)
+    x_data = fakeData["x"]
+    kD_data = fakeData["KD"]
+    O1_data = fakeData["O1_00"]
+    O2_data = fakeData["O2_00"]
+    O1_fit, O2_fit = true_fw(x_data, kD_data, fitted_params)
+    rmse_O1 = sqrt(mean((O1_data .- O1_fit).^2))
+    rmse_O2 = sqrt(mean((O2_data .- O2_fit).^2))
+    metrics_dict = Dict(
+        "RMSE_O1" => rmse_O1,
+        "RMSE_O2" => rmse_O2,
+    )
+    @save name metrics_dict
+    return metrics_dict
+end
+
+plot_fit_vs_data(fakeData, final_params_derepr, "bbo_fit_vs_data_classic_noAccessory.png")
+plot_error(fakeData, final_params_derepr, "bbo_error_vs_x_classic_noAccessory.png")
+metrics_dict = compute_metrics(fakeData, final_params_derepr, "bbo_metrics_classic_noAccessory.jld2")
+
+    
 
