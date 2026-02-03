@@ -9,7 +9,7 @@ end
 
 function make_ModelCombiClassic(;)
    # close initial guess 
-p_classical_derepresented_ig = ComponentArray(
+    p_classical_derepresented_ig = ComponentArray(
         fI=0.5,
         alpha=1.9e6,
         tT=600,
@@ -24,6 +24,10 @@ p_classical_derepresented_ig = ComponentArray(
         O2max=100.0 #(80,120)
     )
 
+    p_extra_derepresented_ig = ComponentArray(
+        extraCD2 = 0.97,
+        extraPD1 = 70.0
+    )
 
     # tight bounds around true params
 
@@ -69,6 +73,7 @@ p_classical_derepresented_ig = ComponentArray(
 
     params_derepresented_ig = ComponentArray(
         p_classical=deepcopy(p_classical_derepresented_ig),
+        p_extra = deepcopy(p_extra_derepresented_ig)
         # no flex
         
     )
