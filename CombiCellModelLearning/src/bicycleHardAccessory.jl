@@ -159,8 +159,8 @@ fakeData = sim_data(x_for_sim, kD_for_sim, stdevs_for_sim, params_for_sim, true_
 # differential evolution
 
 
-# model = CombiCellModelLearning.make_ModelCombiClassic()
-# p_repr_ig = deepcopy(model.params_repr_ig)
+model = CombiCellModelLearning.make_ModelCombiClassic()
+p_repr_ig = deepcopy(model.params_repr_ig)
 # # learning problem
 # learning_problem = CombiCellModelLearning.LearningProblem(
 #     data =fakeData,

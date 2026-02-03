@@ -67,6 +67,7 @@ function make_ModelCombiClassic(;)
 
     params_repr_ig = ComponentArray(
         p_classical=represent_on_type(p_classical_derepresented_ig, ModelCombiClassic),
+        # p_extra = represent_on_type(p_extra_derepresented_ig, ModelCombiClassic)
         # no flex
         
     )
@@ -158,12 +159,14 @@ function represent_on_type(p_derepresented, model_by_type::Type{ModelCombiClassi
         XO1=log(p_derepresented.XO1),
         O1max=log(p_derepresented.O1max),  # log
         O2max=log(p_derepresented.O2max),
+        extraCD2 = log(p_derepresented.extraCD2), # log for now but what if it has to be sqrt ??
+        extraPD1 = log(p_derepresented.extraPD1) # log for now but what if it has to sqrt??
     )
 end
 
 function derepresent(p_repr, model::ModelCombiClassic)
     return ComponentArray(
-        fI=1 / (1 + exp(-p_repr.fI)),  # sigmoid
+        fI=exp(-p_repr.fI),  # TODO: rerun bicycle.jl given fix
         alpha=exp(p_repr.alpha),
         tT=exp(p_repr.tT),
         g1=exp(p_repr.g1),
@@ -174,7 +177,7 @@ function derepresent(p_repr, model::ModelCombiClassic)
         lambdaX=exp(p_repr.lambdaX),
         nC=(p_repr.nC)^2,
         XO1=exp(p_repr.XO1),
-        O1max=1 / (1 + exp(-p_repr.O1max)),  # sigmoid
+        O1max=exp(-p_repr.O1max),  
         O2max=exp(p_repr.O2max),
     )
 end
