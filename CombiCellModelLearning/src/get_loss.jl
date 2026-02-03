@@ -6,6 +6,16 @@ function get_loss(p_repr; learning_problem::LearningProblem{M}) where {M<:Abstra
     KD = learning_problem.data["KD"]
     O1_00 = learning_problem.data["O1_00"]
     O2_00 = learning_problem.data["O2_00"]
+    O1_10 = learning_problem.data["O1_10"]
+    O2_10 = learning_problem.data["O2_10"]
+    O1_01 = learning_problem.data["O1_01"]
+    O2_01 = learning_problem.data["O2_01"]
+    O1_11 = learning_problem.data["O1_11"]
+    O2_11 = learning_problem.data["O2_11"]
+
+    # make matrix of all of these
+    output_true_matrix = hcat(O1_00, O2_00, O1_10, O2_10, O1_01, O2_01, O1_11, O2_11)
+    
     # c24_normalized = get_freq_response(
     #     learning_problem.on_times, 
     #     learning_problem.off_times, 
@@ -77,9 +87,12 @@ function get_loss(p_repr; learning_problem::LearningProblem{M}) where {M<:Abstra
 
     # attempt 1: new loss strat vanilla
     params_derepresented = derepresent_all(p_repr, learning_problem.model)
-    O1_00_pred, O2_00_pred = forward_combi(x, KD, params_derepresented, learning_problem.model) # TODO: Test 
+    # O1_00_pred, O2_00_pred = forward_combi(x, KD, params_derepresented, learning_problem.model) 
+    # now vector
+    outputs_pred = forward_combi(x, KD, params_derepresented, learning_problem.model)
     # Compute loss against learning_problem.O1_data and O2_data
-    ssr = sum((O1_00_pred .- O1_00).^2) + sum((O2_00_pred .- O2_00).^2)
+    # ssr = sum((O1_00_pred .- O1_00).^2) + sum((O2_00_pred .- O2_00).^2)
+    ssr = norm(output_true_matrix - output_pred) # default p =2
     return ssr
 
 end

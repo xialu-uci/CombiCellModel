@@ -83,10 +83,10 @@ p_classical_derepresented_ig = ComponentArray(
     )
 end
 
-function fw(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::ModelCombiClassic)
+function fw(x::Vector{Float64}, kD::Vector{Float64}, p_class, model::ModelCombiClassic)
 
-
-    fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max = p_derepresented.p_classical
+# for no accessory condition p_class is just p_derepresented.p_classical
+    fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max = p_class
 
     O1 = Float64[]
     O2 = Float64[]
