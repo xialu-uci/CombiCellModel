@@ -21,13 +21,16 @@ function make_ModelCombiClassic(;)
         nC=2.0, #(1.5,2.5)
         XO1=0.5, #(0.3,0.7)
         O1max=0.8, #(0.7,1.0)
-        O2max=100.0 #(80,120)
-    )
-
-    p_extra_derepresented_ig = ComponentArray(
+        O2max=100.0, #(80,120)
         extraCD2 = 0.97,
         extraPD1 = 70.0
     )
+
+    # p_extra_derepresented_ig = ComponentArray(
+    #     extraCD2 = 0.97,
+    #     extraPD1 = 70.0
+    # )
+
 
     # tight bounds around true params
 
@@ -45,12 +48,20 @@ function make_ModelCombiClassic(;)
         XO1=0.3,
         O1max=0.7,
         O2max=80.0,
+        extraCD2 = 0.7, # have to change how handling this later
+        extraPD1 = 60.0
     )
+
+    # p_extra_derepresented_lowerbounds = ComponentArray(
+    #     extraCD2 = p_classical_derepresented_lowerbounds.O1max,
+    #     extraPD1 = p_classical_derepresented_lowerbounds.O2max
+    # )
+
 
     p_derepresented_upperbounds = ComponentArray(
         fI= 0.7,
         alpha=2.1e6,
-        tT=600.0,
+        tT=800.0,
         g1=0.9,
         k_on_2d=16.0,
         # kD=1e3, # TODO: this is given, figure out how to get it in here
@@ -61,8 +72,19 @@ function make_ModelCombiClassic(;)
         XO1=0.7,
         O1max=1.0,
         O2max=120.0,
+        extraCD2 = 1.0; # have to change how handling later
+        extraPD1 = 120.0
     )
-    # initial condition - not used
+
+    # p_extra_derepresented_upperbounds = ComponentArray(
+    #     extraCD2 = p_classical_derepresented_upperbounds.O1max,
+    #     extraPD1 = p_classical_derepresented_upperbounds.O2max
+    # )
+
+    # initial conditionp_extra_derepresented_upperbounds = ComponentArray(
+    #     extraCD2 = p_classical_derepresented_upperbounds.O1max,
+    #     extraPD1 = p_classical_derepresented_upperbounds.O2max
+    # ) - not used
     u0 = [0.0]
 
     params_repr_ig = ComponentArray(
@@ -74,13 +96,14 @@ function make_ModelCombiClassic(;)
 
     params_derepresented_ig = ComponentArray(
         p_classical=deepcopy(p_classical_derepresented_ig),
-        p_extra = deepcopy(p_extra_derepresented_ig)
+       # p_extra = deepcopy(p_extra_derepresented_ig)
         # no flex
         
     )
 
     return ModelCombiClassic(
         p_classical_derepresented_ig,
+       # p_extra_derepresented_ig?
         p_derepresented_lowerbounds,
         p_derepresented_upperbounds,
         u0,
@@ -166,7 +189,7 @@ end
 
 function derepresent(p_repr, model::ModelCombiClassic)
     return ComponentArray(
-        fI=exp(-p_repr.fI),  # TODO: rerun bicycle.jl given fix
+        fI=exp(p_repr.fI),  # TODO: rerun bicycle.jl given fix
         alpha=exp(p_repr.alpha),
         tT=exp(p_repr.tT),
         g1=exp(p_repr.g1),
@@ -177,7 +200,9 @@ function derepresent(p_repr, model::ModelCombiClassic)
         lambdaX=exp(p_repr.lambdaX),
         nC=(p_repr.nC)^2,
         XO1=exp(p_repr.XO1),
-        O1max=exp(-p_repr.O1max),  
+        O1max=exp(p_repr.O1max),  
         O2max=exp(p_repr.O2max),
+        extraCD2 = exp(p_repr.extraCD2),
+        extraPD1 = exp(p_repr.extraPD1)
     )
 end

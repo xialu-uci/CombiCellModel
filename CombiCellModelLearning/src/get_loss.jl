@@ -89,10 +89,10 @@ function get_loss(p_repr; learning_problem::LearningProblem{M}) where {M<:Abstra
     params_derepresented = derepresent_all(p_repr, learning_problem.model)
     # O1_00_pred, O2_00_pred = forward_combi(x, KD, params_derepresented, learning_problem.model) 
     # now vector
-    outputs_pred = forward_combi(x, KD, params_derepresented, learning_problem.model)
+    output_pred_matrix = forward_combi(x, KD, params_derepresented, learning_problem.model)
     # Compute loss against learning_problem.O1_data and O2_data
     # ssr = sum((O1_00_pred .- O1_00).^2) + sum((O2_00_pred .- O2_00).^2)
-    ssr = norm(output_true_matrix - output_pred) # default p =2
+    ssr = norm(output_true_matrix - output_pred_matrix) # default p =2
     return ssr
 
 end
