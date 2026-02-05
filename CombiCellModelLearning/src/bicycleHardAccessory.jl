@@ -4,6 +4,8 @@ using ComponentArrays # i feel like I shouldn't need this in here...
 using Optimization
 using OptimizationBBO
 using Statistics
+using JLD2
+using Plots
 
 # using OptimizationBBO
 
@@ -417,6 +419,8 @@ function compute_metrics_all_outputs(fakeData, fitData, savedir)
     println("RMSE Metrics:")
     println("-"^40)
     
+    # bias = 0
+    n = length(fakeData["x"])
     for output_name in output_names
         # Extract data and fit
         data = fakeData[output_name]
@@ -425,17 +429,24 @@ function compute_metrics_all_outputs(fakeData, fitData, savedir)
         # Calculate RMSE
         rmse = sqrt(mean((data .- fit).^2))
         metrics_dict["RMSE_$output_name"] = rmse
+
+        # Calculate bias 
+
+        bias = abs(sum(fit .> data)/n - 0.5)
+        metrics_dict["bias_$output_name"] = bias
         
         # Print formatted output
         println("RMSE_$output_name: $(lpad(round(rmse, digits=6), 12))")
+        println("bias_$output_name: $(lpad(round(bias, digits=6), 12))")
     end
+   
     
     # Calculate average RMSE
-    avg_rmse = mean(values(metrics_dict))
-    metrics_dict["Average_RMSE"] = avg_rmse
+    # avg_rmse = mean(values(metrics_dict))
+    # metrics_dict["Average_RMSE"] = avg_rmse
     
-    println("-"^40)
-    println("Average RMSE: $(lpad(round(avg_rmse, digits=6), 16))")
+    # println("-"^40)
+    # println("Average RMSE: $(lpad(round(avg_rmse, digits=6), 16))")
     
     # Save metrics
     metrics_path = joinpath(savedir, "model_metrics.jld2")
@@ -540,9 +551,9 @@ function generate_all_plots_and_metrics(fakeData, fitted_params, loss_history, s
     println("\n3. Plotting fit vs data...")
     plot_fit_vs_data(fakeData, fitData, savedir)
     
-    # Step 4: Plot error
-    println("\n4. Plotting error...")
-    plot_error_all_outputs(fakeData, fitData, savedir)
+    # # Step 4: Plot error
+    # println("\n4. Plotting error...")
+    # plot_error_all_outputs(fakeData, fitData, savedir)
     
     # Step 5: Plot residuals
     println("\n5. Plotting residuals...")
