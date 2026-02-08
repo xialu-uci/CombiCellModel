@@ -403,7 +403,7 @@ function plot_loss_history(loss_history, savedir)
     """
     Plots the loss history from the optimization process using Makie.
     """
-    fig = Figure(resolution=(800, 600))
+    fig = Figure(size=(800, 600))
     ax = Makie.Axis(fig[1, 1],
               xlabel="Iteration",
               ylabel="Loss",
@@ -431,142 +431,165 @@ function plot_loss_history(loss_history, savedir)
 end
 
 # 2. Plot fit vs data using Makie
+# 2. Plot fit vs data using Makie - with separate figures for each kD
 function plot_fit_vs_data(fakeData, fitData, savedir)
     """
-    Creates 8 plots comparing fitted model predictions to simulated data using Makie.
+    Creates 3 sets of plots comparing fitted model predictions to simulated data,
+    one set for each unique kD value.
     """
     x_data = fakeData["x"]
+    kD_data = fakeData["KD"]
     output_names = ["O1_00", "O2_00", "O1_10", "O2_10", "O1_01", "O2_01", "O1_11", "O2_11"]
     
-    # Create figure with 4x2 grid
-    fig = Figure(resolution=(1400, 1800))
+    # Get unique kD values and their indices
+    unique_kDs = unique(kD_data)
+    println("Found $(length(unique_kDs)) unique kD values: $unique_kDs")
     
-    for (idx, output_name) in enumerate(output_names)
-        # Calculate row and column
-        row = ((idx-1) ÷ 2) + 1
-        col = ((idx-1) % 2) + 1
+    # Create a figure for each unique kD
+    figures = []
+    
+    for (kD_idx, kD_value) in enumerate(unique_kDs)
+        # Find indices for this kD value
+        kD_indices = findall(kD_data .== kD_value)
         
-        # Extract data and fit
-        data = fakeData[output_name]
-        fit = fitData[output_name]
+        # Create figure with 4x2 grid for this kD
+        fig = Figure(size=(1400, 1800))
         
-        # should fix weird polygons in my fit
-        sort_idx = sortperm(x_data)
-        x_sorted = x_data[sort_idx]
-        fit_sorted = fit[sort_idx]
-        
-        # Create axis for this subplot
-        ax = Makie.Axis(fig[row, col],
-                  xlabel=(row == 4 ? "x" : ""),
-                  ylabel=output_name,
-                  title="Fit vs Data: $output_name")
-        
-        # Plot data points
-        scatter!(ax, x_data, data,
-                 markersize=6,
-                 color=(:steelblue, 0.7),
-                 label="Data",
-                 marker=:circle)
-        
-        # Plot fitted curve
-        lines!(ax, x_sorted, fit_sorted,
-               linewidth=2.5,
-               color=:red,
-               label="Fit")
-        
-        # Add legend to first plot only to save space
-        if idx == 1
-            axislegend(ax, position=:lt)
+        for (output_idx, output_name) in enumerate(output_names)
+            # Calculate row and column
+            row = ((output_idx-1) ÷ 2) + 1
+            col = ((output_idx-1) % 2) + 1
+            
+            # Extract data and fit for this kD only
+            data = fakeData[output_name][kD_indices]
+            fit = fitData[output_name][kD_indices]
+            x_subset = x_data[kD_indices]
+            
+            # Sort by x for smooth line plot (fixes polygons)
+            sort_idx = sortperm(x_subset)
+            x_sorted = x_subset[sort_idx]
+            fit_sorted = fit[sort_idx]
+            
+            # Create axis for this subplot
+            ax = Makie.Axis(fig[row, col],
+                      xlabel=(row == 4 ? "x" : ""),
+                      ylabel=output_name,
+                      title="kD = $kD_value: $output_name",
+                      xscale=log10)  # Using log scale for x since your data is log-spaced
+            
+            # Plot data points
+            scatter!(ax, x_subset, data,
+                     markersize=8,
+                     color=(:steelblue, 0.7),
+                     label="Data",
+                     marker=:circle)
+            
+            # Plot fitted curve
+            lines!(ax, x_sorted, fit_sorted,
+                   linewidth=2.5,
+                   color=:red,
+                   label="Fit")
+            
+            # Add legend to first plot only to save space
+            if output_idx == 1
+                axislegend(ax, position=:lt)
+            end
+            
+            # Add grid
+            ax.xgridvisible = true
+            ax.ygridvisible = true
+            ax.xminorgridvisible = true
         end
         
-        # Add grid
-        ax.xgridvisible = true
-        ax.ygridvisible = true
+        # Add overall title for this figure
+        Label(fig[0, :], "Model Fit vs Simulated Data - kD = $kD_value", 
+              fontsize=20, font=:bold)
+        
+        # Adjust layout
+        colgap!(fig.layout, 20)
+        rowgap!(fig.layout, 20)
+        
+        # Save this figure
+        save_path = joinpath(savedir, "fit_vs_data_kD_$(kD_value).png")
+        save(save_path, fig)
+        println("Saved fit vs data plot for kD = $kD_value to: $save_path")
+        
+        push!(figures, fig)
     end
     
-    # Add overall title
-    Label(fig[0, :], "Model Fit vs Simulated Data (All Outputs)", 
-          fontsize=20, font=:bold)
     
-    # Adjust layout
-    colgap!(fig.layout, 20)
-    rowgap!(fig.layout, 20)
-    
-    # Save figure
-    save_path = joinpath(savedir, "fit_vs_data_all_outputs_makie.png")
-    save(save_path, fig)
-    println("Fit vs data plots saved to: $save_path")
-    
-    return fig
+    return figures
 end
 
-# 3. Plot error using Makie
-function plot_error_all_outputs(fakeData, fitData, savedir)
-    """
-    Creates 8 error plots showing absolute differences between data and fit using Makie.
-    """
-    x_data = fakeData["x"]
-    output_names = ["O1_00", "O2_00", "O1_10", "O2_10", "O1_01", "O2_01", "O1_11", "O2_11"]
+
+
+# # 3. Plot error using Makie
+# function plot_error_all_outputs(fakeData, fitData, savedir)
+#     """
+#     Creates 8 error plots showing absolute differences between data and fit using Makie.
+#     """
+#     x_data = fakeData["x"]
+#     output_names = ["O1_00", "O2_00", "O1_10", "O2_10", "O1_01", "O2_01", "O1_11", "O2_11"]
     
-    # Create figure with 4x2 grid
-    fig = Figure(resolution=(1400, 1800))
+#     # Create figure with 4x2 grid
+#     fig = Figure(resolution=(1400, 1800))
     
-    for (idx, output_name) in enumerate(output_names)
-        row = ((idx-1) ÷ 2) + 1
-        col = ((idx-1) % 2) + 1
+#     for (idx, output_name) in enumerate(output_names)
+#         row = ((idx-1) ÷ 2) + 1
+#         col = ((idx-1) % 2) + 1
         
-        # Extract data and fit
-        data = fakeData[output_name]
-        fit = fitData[output_name]
+#         # Extract data and fit
+#         data = fakeData[output_name]
+#         fit = fitData[output_name]
         
-        # Calculate absolute error
-        error = abs.(data .- fit)
-        mean_error = mean(error)
+#         # Calculate absolute error
+#         error = abs.(data .- fit)
+#         mean_error = mean(error)
         
-        # Create axis
-        ax = Makie.Axis(fig[row, col],
-                  xlabel=(row == 4 ? "x" : ""),
-                  ylabel="|Data - Fit|",
-                  title="Error: $output_name")
+#         # Create axis
+#         ax = Makie.Axis(fig[row, col],
+#                   xlabel=(row == 4 ? "x" : ""),
+#                   ylabel="|Data - Fit|",
+#                   title="Error: $output_name")
         
-        # Plot error points
-        scatter!(ax, x_data, error,
-                 markersize=6,
-                 color=:red,
-                 label="Absolute Error",
-                 marker=:diamond)
+#         # Plot error points
+#         scatter!(ax, x_data, error,
+#                  markersize=6,
+#                  color=:red,
+#                  label="Absolute Error",
+#                  marker=:diamond)
         
-        # Add mean error line
-        hlines!(ax, [mean_error],
-                color=:blue,
-                linewidth=2,
-                linestyle=:dash,
-                label="Mean Error = $(round(mean_error, digits=5))")
+#         # Add mean error line
+#         hlines!(ax, [mean_error],
+#                 color=:blue,
+#                 linewidth=2,
+#                 linestyle=:dash,
+#                 label="Mean Error = $(round(mean_error, digits=5))")
         
-        # Add legend to first plot only
-        if idx == 1
-            axislegend(ax, position=:rt)
-        end
+#         # Add legend to first plot only
+#         if idx == 1
+#             axislegend(ax, position=:rt)
+#         end
         
-        # Add grid
-        ax.xgridvisible = true
-        ax.ygridvisible = true
-    end
+#         # Add grid
+#         ax.xgridvisible = true
+#         ax.ygridvisible = true
+#     end
     
-    # Add overall title
-    Label(fig[0, :], "Error Plots (All Outputs)", 
-          fontsize=20, font=:bold)
+#     # Add overall title
+#     Label(fig[0, :], "Error Plots (All Outputs)", 
+#           fontsize=20, font=:bold)
     
-    # Adjust layout
-    colgap!(fig.layout, 20)
-    rowgap!(fig.layout, 20)
+#     # Adjust layout
+#     colgap!(fig.layout, 20)
+#     rowgap!(fig.layout, 20)
     
-    save_path = joinpath(savedir, "error_plots_all_outputs_makie.png")
-    save(save_path, fig)
-    println("Error plots saved to: $save_path")
+#     save_path = joinpath(savedir, "error_plots_all_outputs_makie.png")
+#     save(save_path, fig)
+#     println("Error plots saved to: $save_path")
     
-    return fig
-end
+#     return fig
+# end
 
 # 4. Plot residuals using Makie
 function plot_residuals(fakeData, fitData, savedir)
@@ -574,120 +597,157 @@ function plot_residuals(fakeData, fitData, savedir)
     Creates residual plots (data - fit) using Makie.
     """
     x_data = fakeData["x"]
+    kD_data = fakeData["KD"]
     output_names = ["O1_00", "O2_00", "O1_10", "O2_10", "O1_01", "O2_01", "O1_11", "O2_11"]
+
+    unique_kDs = unique(kD_data)
+    println("Found $(length(unique_kDs)) unique kD values: $unique_kDs")
     
-    # Create figure with 4x2 grid
-    fig = Figure(resolution=(1400, 1800))
     
-    for (idx, output_name) in enumerate(output_names)
-        row = ((idx-1) ÷ 2) + 1
-        col = ((idx-1) % 2) + 1
+    # Create a figure for each unique kD
+    figures = []
+
+    for (kD_idx, kD_value) in enumerate(unique_kDs)
+        # Find indices for this kD value
+        kD_indices = findall(kD_data .== kD_value)
         
-        # Extract data and fit
-        data = fakeData[output_name]
-        fit = fitData[output_name]
+        # Create figure with 4x2 grid for this kD
+        fig = Figure(size=(1400, 1800))
+    
+        for (output_idx, output_name) in enumerate(output_names)
+            row = ((output_idx-1) ÷ 2) + 1
+            col = ((output_idx-1) % 2) + 1    
         
-        # Calculate residuals
-        residuals = data .- fit
-        mean_residual = mean(residuals)
+            # Extract data and fit
+            data = fakeData[output_name][kD_indices]
+            fit = fitData[output_name][kD_indices]
+            x_subset = x_data[kD_indices]
         
-        # Create axis
-        ax = Makie.Axis(fig[row, col],
+            # Calculate residuals
+            residuals = data .- fit
+            mean_residual = mean(residuals)
+        
+            # Create axis
+            ax = Makie.Axis(fig[row, col],
                   xlabel=(row == 4 ? "x" : ""),
                   ylabel="Data - Fit",
-                  title="Residuals: $output_name")
+                  title="Residuals: kD = $kD_value: $output_name",
+                  xscale =log10)
+                  
         
-        # Plot residuals
-        scatter!(ax, x_data, residuals,
+            # Plot residuals
+            scatter!(ax, x_subset, residuals,
                  markersize=6,
                  color=:purple,
                  label="Residuals",
                  marker=:circle)
         
-        # Add zero line
-        hlines!(ax, [0.0],
+            # Add zero line
+            hlines!(ax, [0.0],
                 color=:black,
                 linewidth=1,
                 linestyle=:dash,
                 alpha=0.5,
                 label="Zero Line")
         
-        # Add mean residual line
-        hlines!(ax, [mean_residual],
+            # Add mean residual line
+            hlines!(ax, [mean_residual],
                 color=:red,
                 linewidth=2,
                 label="Mean Residual = $(round(mean_residual, digits=5))")
         
-        # Add legend to first plot only
-        if idx == 1
-            axislegend(ax, position=:rt)
-        end
+            # Add legend to first plot only
+            if output_idx == 1
+                axislegend(ax, position=:rt)
+            end
         
-        # Add grid
-        ax.xgridvisible = true
-        ax.ygridvisible = true
+            # Add grid
+            ax.xgridvisible = true
+            ax.ygridvisible = true
+        end
+        # Add overall title for this figure
+        Label(fig[0, :], "Residual Plots (All Outputs) - kD = $kD_value", 
+              fontsize=20, font=:bold)
+        
+        # Adjust layout
+        colgap!(fig.layout, 20)
+        rowgap!(fig.layout, 20)
+        
+        # Save this figure
+        save_path = joinpath(savedir, "residaul_plots_kD_$(kD_value).png")
+        save(save_path, fig)
+        println("Saved fit vs data plot for kD = $kD_value to: $save_path")
+        
+        push!(figures, fig)
     end
     
-    # Add overall title
-    Label(fig[0, :], "Residual Plots (All Outputs)", 
-          fontsize=20, font=:bold)
-    
-    # Adjust layout
-    colgap!(fig.layout, 20)
-    rowgap!(fig.layout, 20)
-    
-    save_path = joinpath(savedir, "residual_plots_all_outputs_makie.png")
-    save(save_path, fig)
-    println("Residual plots saved to: $save_path")
-    
-    return fig
+    return figures
 end
 
 # Compute metrics function
-function compute_metrics_all_outputs(fakeData, fitData, savedir)
+# Compute metrics function per ligand condition
+function compute_metrics_per_ligand_condition(fakeData, fitData, savedir)
     """
-    Computes RMSE and bias for each of the 8 output variables.
+    Computes RMSE and bias for each ligand condition (averaging O1 and O2).
     """
     output_names = ["O1_00", "O2_00", "O1_10", "O2_10", "O1_01", "O2_01", "O1_11", "O2_11"]
+    ligand_conds = ["00", "10", "01", "11"]
     metrics_dict = Dict{String, Float64}()
     
-    println("Model Metrics:")
-    println("-"^50)
+    println("Model Metrics (Per Ligand Condition):")
+    println("-"^60)
     
     n = length(fakeData["x"])
-    for output_name in output_names
-        data = fakeData[output_name]
-        fit = fitData[output_name]
+    
+    for cond in ligand_conds
+        # Get O1 and O2 data for this condition
+        o1_data = fakeData["O1_$cond"]
+        o2_data = fakeData["O2_$cond"]
+        o1_fit = fitData["O1_$cond"]
+        o2_fit = fitData["O2_$cond"]
         
-        # Calculate RMSE
-        rmse = sqrt(mean((data .- fit).^2))
-        metrics_dict["RMSE_$output_name"] = rmse
+        # Combine O1 and O2 for condition-level metrics
+        all_data = vcat(o1_data, o2_data)
+        all_fit = vcat(o1_fit, o2_fit)
         
-        # Calculate bias
-        bias = abs(sum(fit .> data)/n - 0.5)
-        metrics_dict["bias_$output_name"] = bias
+        # Calculate RMSE for this condition
+        rmse = sqrt(mean((all_data .- all_fit).^2))
+        metrics_dict["RMSE_$cond"] = rmse
+        
+        # Calculate bias for this condition
+        bias = abs(sum(all_fit .> all_data)/length(all_data) - 0.5)
+        metrics_dict["bias_$cond"] = bias
+        
+        # Also calculate individual RMSEs for reference
+        rmse_o1 = sqrt(mean((o1_data .- o1_fit).^2))
+        rmse_o2 = sqrt(mean((o2_data .- o2_fit).^2))
+        metrics_dict["RMSE_O1_$cond"] = rmse_o1
+        metrics_dict["RMSE_O2_$cond"] = rmse_o2
         
         # Print formatted output
-        println("$output_name:")
-        println("  RMSE:  $(round(rmse, digits=6))")
-        println("  Bias:  $(round(bias, digits=6))")
+        println("Ligand Condition $cond:")
+        println("  Combined RMSE:  $(round(rmse, digits=6))")
+        println("  O1 RMSE:                $(round(rmse_o1, digits=6))")
+        println("  O2 RMSE:                $(round(rmse_o2, digits=6))")
+        println("  Bias:                   $(round(bias, digits=6))")
         println()
     end
     
-    # Calculate overall metrics
-    all_rmse = [metrics_dict["RMSE_$name"] for name in output_names]
-    all_bias = [metrics_dict["bias_$name"] for name in output_names]
+    # Calculate overall metrics across all conditions
+    cond_rmse = [metrics_dict["RMSE_$cond"] for cond in ligand_conds]
+    cond_bias = [metrics_dict["bias_$cond"] for cond in ligand_conds]
     
-    metrics_dict["Average_RMSE"] = mean(all_rmse)
-    metrics_dict["Average_bias"] = mean(all_bias)
+    metrics_dict["Worst_RMSE_all_conds"] = maximum(cond_rmse)
+    metrics_dict["Worse_bias_all_conds"] = maximum(cond_bias)
     
-    println("-"^50)
+    
+    println("-"^60)
     println("Overall Metrics:")
-    println("  Average RMSE:  $(round(mean(all_rmse), digits=6))")
-    println("  Average Bias:  $(round(mean(all_bias), digits=6))")
+    println("  Worse RMSE across conditions:  $(round(maximum(cond_rmse), digits=6))")
+    println("  worst Bias across conditions:  $(round(maximum(cond_bias), digits=6))")
     
     # Save metrics
-    metrics_path = joinpath(savedir, "model_metrics.jld2")
+    metrics_path = joinpath(savedir, "model_metrics_per_condition.jld2")
     @save metrics_path metrics_dict
     println("\nMetrics saved to: $metrics_path")
     
@@ -700,7 +760,7 @@ function generate_all_plots_and_metrics(fakeData, fitted_params, loss_history, s
     Convenience function to generate all plots and compute metrics using Makie.
     """
     println("\n" * "="^60)
-    println("Generating Plots and Metrics (Using Makie)")
+    println("Generating Plots and Metrics")
     println("="^60)
     
     # Step 1: Generate fit data ONCE
@@ -715,9 +775,9 @@ function generate_all_plots_and_metrics(fakeData, fitted_params, loss_history, s
     println("\n3. Plotting fit vs data...")
     plot_fit_vs_data(fakeData, fitData, savedir)
     
-    # Step 4: Plot error with Makie
-    println("\n4. Plotting error...")
-    plot_error_all_outputs(fakeData, fitData, savedir)
+    # # Step 4: Plot error with Makie
+    # println("\n4. Plotting error...")
+    # plot_error_all_outputs(fakeData, fitData, savedir)
     
     # Step 5: Plot residuals with Makie
     println("\n5. Plotting residuals...")
@@ -725,7 +785,7 @@ function generate_all_plots_and_metrics(fakeData, fitted_params, loss_history, s
     
     # Step 6: Compute metrics
     println("\n6. Computing metrics...")
-    metrics = compute_metrics_all_outputs(fakeData, fitData, savedir)
+    metrics = compute_metrics_per_ligand_condition(fakeData, fitData, savedir)
     
     println("\n" * "="^60)
     println("All plots and metrics generated successfully!")
