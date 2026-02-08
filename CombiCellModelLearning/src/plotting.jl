@@ -444,6 +444,13 @@ function plot_fit_vs_data(fakeData, fitData, savedir)
     # Get unique kD values and their indices
     unique_kDs = unique(kD_data)
     println("Found $(length(unique_kDs)) unique kD values: $unique_kDs")
+
+    # Filter out zero values from x_data for log scale
+    valid_global_idx = x_data .> 0
+    x_nonzero = x_data[valid_global_idx]
+    println("\nGlobal x range (non-zero): $(minimum(x_nonzero)) to $(maximum(x_nonzero))")
+    println("log10(x) range: $(log10(minimum(x_nonzero))) to $(log10(maximum(x_nonzero)))")
+    
     
     # Create a figure for each unique kD
     figures = []
@@ -451,6 +458,10 @@ function plot_fit_vs_data(fakeData, fitData, savedir)
     for (kD_idx, kD_value) in enumerate(unique_kDs)
         # Find indices for this kD value
         kD_indices = findall(kD_data .== kD_value)
+
+        # Filter indices to only include non-zero x values
+        valid_kD_idx = [i for i in kD_indices if x_data[i] > 0]
+        
         
         # Create figure with 4x2 grid for this kD
         fig = Figure(size=(1400, 1800))
@@ -461,9 +472,9 @@ function plot_fit_vs_data(fakeData, fitData, savedir)
             col = ((output_idx-1) % 2) + 1
             
             # Extract data and fit for this kD only
-            data = fakeData[output_name][kD_indices]
-            fit = fitData[output_name][kD_indices]
-            x_subset = x_data[kD_indices]
+            data = fakeData[output_name][valid_kD_idx]
+            fit = fitData[output_name][valid_kD_idx]
+            x_subset = x_data[valid_kD_idx]
             
             # Sort by x for smooth line plot (fixes polygons)
             sort_idx = sortperm(x_subset)
@@ -475,14 +486,15 @@ function plot_fit_vs_data(fakeData, fitData, savedir)
                       xlabel=(row == 4 ? "x" : ""),
                       ylabel=output_name,
                       title="kD = $kD_value: $output_name",
-                      xscale=log10)  # Using log scale for x since your data is log-spaced
+                      xscale=log10
+                      )  # Using log scale for x 
             
             # Plot data points
             scatter!(ax, x_subset, data,
                      markersize=8,
                      color=(:steelblue, 0.7),
                      label="Data",
-                     marker=:circle)
+                     marker=:diamond)
             
             # Plot fitted curve
             lines!(ax, x_sorted, fit_sorted,
@@ -602,6 +614,13 @@ function plot_residuals(fakeData, fitData, savedir)
 
     unique_kDs = unique(kD_data)
     println("Found $(length(unique_kDs)) unique kD values: $unique_kDs")
+
+    # Filter out zero values from x_data for log scale
+    valid_global_idx = x_data .> 0
+    x_nonzero = x_data[valid_global_idx]
+    println("\nGlobal x range (non-zero): $(minimum(x_nonzero)) to $(maximum(x_nonzero))")
+    println("log10(x) range: $(log10(minimum(x_nonzero))) to $(log10(maximum(x_nonzero)))")
+    
     
     
     # Create a figure for each unique kD
@@ -610,6 +629,10 @@ function plot_residuals(fakeData, fitData, savedir)
     for (kD_idx, kD_value) in enumerate(unique_kDs)
         # Find indices for this kD value
         kD_indices = findall(kD_data .== kD_value)
+
+         # Filter indices to only include non-zero x values
+        valid_kD_idx = [i for i in kD_indices if x_data[i] > 0]
+        
         
         # Create figure with 4x2 grid for this kD
         fig = Figure(size=(1400, 1800))
@@ -619,9 +642,9 @@ function plot_residuals(fakeData, fitData, savedir)
             col = ((output_idx-1) % 2) + 1    
         
             # Extract data and fit
-            data = fakeData[output_name][kD_indices]
-            fit = fitData[output_name][kD_indices]
-            x_subset = x_data[kD_indices]
+            data = fakeData[output_name][valid_kD_idx]
+            fit = fitData[output_name][valid_kD_idx]
+            x_subset = x_data[valid_kD_idx]
         
             # Calculate residuals
             residuals = data .- fit
@@ -640,7 +663,7 @@ function plot_residuals(fakeData, fitData, savedir)
                  markersize=6,
                  color=:purple,
                  label="Residuals",
-                 marker=:circle)
+                 marker=:diamond)
         
             # Add zero line
             hlines!(ax, [0.0],
@@ -674,7 +697,7 @@ function plot_residuals(fakeData, fitData, savedir)
         rowgap!(fig.layout, 20)
         
         # Save this figure
-        save_path = joinpath(savedir, "residaul_plots_kD_$(kD_value).png")
+        save_path = joinpath(savedir, "residual_plots_kD_$(kD_value).png")
         save(save_path, fig)
         println("Saved fit vs data plot for kD = $kD_value to: $save_path")
         
