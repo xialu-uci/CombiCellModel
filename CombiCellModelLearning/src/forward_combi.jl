@@ -18,6 +18,7 @@ function forward_combi(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented,
     ) 
 
     O1_00, O2_00 = fw(x, kD, p_class, model)
+    
 
     # hardcoded # also a lot of memory to do it this way
     p_class_10 =  ComponentArray(

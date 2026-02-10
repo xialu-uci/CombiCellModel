@@ -221,6 +221,7 @@ include("learning_protocols/base.jl")
 include("learning_protocols/bbo.jl")
 include("learning_protocols/cmaes.jl")
 include("learning_protocols/simplex.jl")
+include("learning_protocols/xialuDiffEvol.jl")
 
 include("config_tools.jl")
 include("get_metrics.jl")
