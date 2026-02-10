@@ -12,7 +12,7 @@ using JLD2
 
 loaddir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/data/" # modify for hpc
 @load joinpath(loaddir, "fakeData.jld2") fakeData
-# @load joinpath(loaddir, "CombiCell_data.jld2") data
+@load joinpath(loaddir, "CombiCell_data.jld2") data
 
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
@@ -23,7 +23,7 @@ model = CombiCellModelLearning.make_ModelCombiClassic()
 p_repr_ig = deepcopy(model.params_repr_ig)
 # learning problem
 learning_problem = CombiCellModelLearning.LearningProblem(
-     data =fakeData, # or data (real)
+     data =data, # fakeData or data (real)
      model= model,
      p_repr_lb=CombiCellModelLearning.represent(model.p_derepresented_lowerbounds, model),
      p_repr_ub=CombiCellModelLearning.represent(model.p_derepresented_upperbounds, model),
@@ -34,7 +34,7 @@ learning_problem = CombiCellModelLearning.LearningProblem(
 
 final_params_derepr, loss_history = CombiCellModelLearning.bbo_learn(learning_problem, p_repr_ig)
 
-savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02102026_bicycleHardAccessory_wideBounds/" # change for diff exp
+savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02102026_bicycleHardAccessory_realData/" # change for diff exp
 
 @save joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
 @save joinpath(savedir, "loss_history.jld2") loss_history

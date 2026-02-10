@@ -35,7 +35,7 @@ function make_ModelCombiClassic(;)
     # tight bounds around true params
 
     p_derepresented_lowerbounds = ComponentArray(
-        fI=0.01,
+        fI=0.01, # don't let this be zero lol
         alpha=1e6,
         tT=100,
         g1=0.01,
