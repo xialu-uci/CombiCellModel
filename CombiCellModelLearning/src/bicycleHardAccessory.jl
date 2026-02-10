@@ -147,7 +147,7 @@ function true_fw_inside(x::Vector{Float64}, kD::Vector{Float64}, params)
 end
 
 fakeData = sim_data(x_for_sim, kD_for_sim, stdevs_for_sim, params_for_sim, true_fw)
-
+realData = 
 
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
@@ -157,12 +157,12 @@ model = CombiCellModelLearning.make_ModelCombiClassic()
 p_repr_ig = deepcopy(model.params_repr_ig)
 # learning problem
 learning_problem = CombiCellModelLearning.LearningProblem(
-     data =fakeData,
+     data =fakeData, # or real data
      model= model,
      p_repr_lb=CombiCellModelLearning.represent(model.p_derepresented_lowerbounds, model),
      p_repr_ub=CombiCellModelLearning.represent(model.p_derepresented_upperbounds, model),
      mask = trues(length(x_for_sim)), # no mask for now
-     loss_strategy="vanilla")
+     loss_strategy="normalized")
 
 # for bbo, use solve(prob, algo, maxiters, callback)
 
@@ -210,7 +210,7 @@ end
 
 final_params_derepr, loss_history = bbo_learn(learning_problem, p_repr_ig)
 
-savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02072026_bicycleHardAccessory/"
+savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02102026_bicycleHardAccessory/"
 
 # TODO: write function plot_loss_history (1 plot), plot_fit_vs_data(8 plots), plot_error (8 plots), compute_metrics (rmse for each output = 8 rmses)
 #TODO : move all the below for hpc later
