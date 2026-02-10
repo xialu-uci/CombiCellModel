@@ -35,21 +35,21 @@ function make_ModelCombiClassic(;)
     # tight bounds around true params
 
     p_derepresented_lowerbounds = ComponentArray(
-        fI=0.3,
-        alpha=1.8e6,
-        tT=400,
-        g1=0.6,
-        k_on_2d=12.0,
+        fI=0.01,
+        alpha=1e6,
+        tT=100,
+        g1=0.01,
+        k_on_2d=10.0,
         # kD=1.0, # TODO: this is given, figure out how to get it in here
-        kP=0.3,
-        nKP=1.5,
-        lambdaX=0.03,
-        nC=1.5 ,
-        XO1=0.3,
-        O1max=0.7,
-        O2max=80.0,
-        extraCD2 = 0.7, # have to change how handling this later
-        extraPD1 = 60.0
+        kP=0.01,
+        nKP=1.0,
+        lambdaX=0.01,
+        nC=1.0 ,
+        XO1=0.01,
+        O1max=0.5,
+        O2max=20.0,
+        extraCD2 = 0.5, # have to change how handling this later
+        extraPD1 = 20.0
     )
 
     # p_extra_derepresented_lowerbounds = ComponentArray(
@@ -59,21 +59,21 @@ function make_ModelCombiClassic(;)
 
 
     p_derepresented_upperbounds = ComponentArray(
-        fI= 0.7,
-        alpha=2.1e6,
-        tT=800.0,
-        g1=0.9,
-        k_on_2d=16.0,
+        fI= 1.0,
+        alpha=1e7,
+        tT=1000.0,
+        g1=1.0,
+        k_on_2d=20.0,
         # kD=1e3, # TODO: this is given, figure out how to get it in here
-        kP=0.7,
-        nKP=2.5,
-        lambdaX=0.1,
-        nC=2.5,
-        XO1=0.7,
+        kP=1.0,
+        nKP=4,
+        lambdaX=1.0,
+        nC=4.0,
+        XO1=1.0,
         O1max=1.0,
-        O2max=120.0,
+        O2max=200.0,
         extraCD2 = 1.0; # have to change how handling later
-        extraPD1 = 120.0
+        extraPD1 = 200.0
     )
 
     # p_extra_derepresented_upperbounds = ComponentArray(

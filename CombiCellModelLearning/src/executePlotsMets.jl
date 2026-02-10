@@ -7,7 +7,7 @@ loaddir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/data/" # modi
 # @load joinpath(loaddir, "CombiCell_data.jld2") data
 
 
-savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02102026_bicycleHardAccessory/" # change for diff exp
+savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02102026_bicycleHardAccessory_wideBounds/" # change for diff exp
 
 @load joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
 @load joinpath(savedir, "loss_history.jld2") loss_history

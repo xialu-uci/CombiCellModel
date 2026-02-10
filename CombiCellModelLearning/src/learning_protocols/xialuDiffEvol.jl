@@ -22,7 +22,7 @@ function bbo_learn(learning_problem, p_repr_ig)
 
     # algo is the optimization algorithm (here bbo)
     # maxiters is maximum iterations
-    maxiters = 30000 # reduced for testing
+    maxiters = 300000 # not reduced for testing?
     # callback is a function called at each iteration, s.t. optimzation stops if it returns true
     config = CallbackConfig() # just stores info for callback function in fields
     callback, loss_history = CombiCellModelLearning.create_bbo_callback_with_early_termination(
