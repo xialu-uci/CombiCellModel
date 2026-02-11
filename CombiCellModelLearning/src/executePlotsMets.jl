@@ -2,12 +2,12 @@ using Makie
 using CairoMakie
 using JLD2
 
-loaddir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/data/" # modify for hpc
+loaddir = "../cleanData" # modified for hpc
 @load joinpath(loaddir, "fakeData.jld2") fakeData
 # @load joinpath(loaddir, "CombiCell_data.jld2") data
 
 
-savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02102026_bicycleHardAccessory_realData/" # change for diff exp
+savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData/" # change for diff exp
 
 @load joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
 @load joinpath(savedir, "loss_history.jld2") loss_history
