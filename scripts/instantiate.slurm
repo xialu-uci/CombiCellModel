@@ -30,7 +30,7 @@ julia -e 'println("Julia threads: ", Threads.nthreads()); println("CPU threads v
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel/CombiCellModelLearning 
-OUTPUTPATH=/pub/stilese/2026/combiOut
+OUTPUTPATH=/pub/stilese/2026/CombiCellModel/tempExp
 
 cd $SOURCEPATH
 
@@ -44,9 +44,9 @@ date; /usr/bin/time -v stdbuf -oL julia --project=CombiCellModelLearning -e 'usi
 # Verify compiled cache was created
 echo "=== Verifying compiled cache ==="
 echo "Compiled Model8 files:"
-ls -la $JULIA_DEPOT_PATH/compiled/v1.12/CombiCellModelLearning/ 2>/dev/null || echo "WARNING: Model8 not in compiled cache!"
+ls -la $JULIA_DEPOT_PATH/compiled/v1.12.5/CombiCellModelLearning/ 2>/dev/null || echo "WARNING: Model8 not in compiled cache!"
 echo "Cache file checksums (save these to compare with batch jobs):"
-md5sum $JULIA_DEPOT_PATH/compiled/v1.12/CombiCellModelLearning/*.ji 2>/dev/null || echo "No .ji files found"
+md5sum $JULIA_DEPOT_PATH/compiled/v1.12.5/CombiCellModelLearning/*.ji 2>/dev/null || echo "No .ji files found"
 echo "Sync to flush NFS cache:"
 sync
 

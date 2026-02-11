@@ -22,9 +22,9 @@ module load julia-j
 # Sync NFS cache and check compiled packages exist
 sync
 echo "Checking compiled cache exists:"
-ls -la $JULIA_DEPOT_PATH/compiled/v1.12/CombiCellModelLearning/ 2>/dev/null || echo "Model8 not found in compiled cache!"
+ls -la $JULIA_DEPOT_PATH/compiled/v1.12.5/CombiCellModelLearning/ 2>/dev/null || echo "Model8 not found in compiled cache!"
 echo "Cache file checksums (compare with instantiate output):"
-md5sum $JULIA_DEPOT_PATH/compiled/v1.12/CombiCellModelLearning/*.ji 2>/dev/null || echo "No .ji files found"
+md5sum $JULIA_DEPOT_PATH/compiled/v1.12.5/CombiCellModelLearning/*.ji 2>/dev/null || echo "No .ji files found"
 
 # Debug: Report environment for troubleshooting precompilation issues
 echo "=== Environment Debug Info ==="
@@ -43,8 +43,9 @@ julia -e 'println("Julia threads: ", Threads.nthreads()); println("CPU threads v
 julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())'
 
 # Set up the experiment
-# SOURCEPATH=/pub/stilese/2026/CombiCellModel/ # don't think i need this for this run
-OUTPUTPATH=/pub/stilese/2026/combiOut
+# SOURCEPATH=/pub/stilese/2026/CombiCellModel/CombiCellModelLearning # don't think i need this for this run
+OUTPUTPATH=/pub/stilese/2026/CombiCellModel/tempExp
+
 
 echo "Test1: does bicycleHardAccessory.jl run on hpc3?"
 
