@@ -70,13 +70,13 @@ end
 
 # 2. Plot fit vs data using Makie
 # 2. Plot fit vs data using Makie - with separate figures for each kD
-function plot_fit_vs_data(fakeData, fitData, savedir)
+function plot_fit_vs_data(dataTrue, fitData, savedir)
     """
     Creates 3 sets of plots comparing fitted model predictions to simulated data,
     one set for each unique kD value.
     """
-    x_data = fakeData["x"]
-    kD_data = fakeData["KD"]
+    x_data = dataTrue["x"]
+    kD_data = dataTrue["KD"]
     output_names = ["O1_00", "O2_00", "O1_10", "O2_10", "O1_01", "O2_01", "O1_11", "O2_11"]
     
     # Get unique kD values and their indices
@@ -110,7 +110,7 @@ function plot_fit_vs_data(fakeData, fitData, savedir)
             col = ((output_idx-1) % 2) + 1
             
             # Extract data and fit for this kD only
-            data = fakeData[output_name][valid_kD_idx]
+            data = dataTrue[output_name][valid_kD_idx]
             fit = fitData[output_name][valid_kD_idx]
             x_subset = x_data[valid_kD_idx]
             
@@ -152,7 +152,7 @@ function plot_fit_vs_data(fakeData, fitData, savedir)
         end
         
         # Add overall title for this figure
-        Label(fig[0, :], "Model Fit vs Simulated Data - kD = $kD_value", 
+        Label(fig[0, :], "Model Fit vs Data - kD = $kD_value", 
               fontsize=20, font=:bold)
         
         # Adjust layout
@@ -242,12 +242,12 @@ end
 # end
 
 # 4. Plot residuals using Makie
-function plot_residuals(fakeData, fitData, savedir)
+function plot_residuals(dataTrue, fitData, savedir)
     """
     Creates residual plots (data - fit) using Makie.
     """
-    x_data = fakeData["x"]
-    kD_data = fakeData["KD"]
+    x_data = dataTrue["x"]
+    kD_data = dataTrue["KD"]
     output_names = ["O1_00", "O2_00", "O1_10", "O2_10", "O1_01", "O2_01", "O1_11", "O2_11"]
 
     unique_kDs = unique(kD_data)
@@ -280,8 +280,8 @@ function plot_residuals(fakeData, fitData, savedir)
             col = ((output_idx-1) % 2) + 1    
         
             # Extract data and fit
-            data = fakeData[output_name][valid_kD_idx]
-            fit = fitData[output_name][valid_kD_idx]
+            data = dataTrue[output_name][valid_kD_idx]
+            fit = dataTrue[output_name][valid_kD_idx]
             x_subset = x_data[valid_kD_idx]
         
             # Calculate residuals
@@ -293,7 +293,8 @@ function plot_residuals(fakeData, fitData, savedir)
                   xlabel=(row == 4 ? "x" : ""),
                   ylabel="Data - Fit",
                   title="Residuals: kD = $kD_value: $output_name",
-                  xscale =log10)
+                  xscale =log10
+                  )
                   
         
             # Plot residuals
@@ -347,7 +348,7 @@ end
 
 # Compute metrics function
 # Compute metrics function per ligand condition
-function compute_metrics_per_ligand_condition(fakeData, fitData, savedir)
+function compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
     """
     Computes RMSE and bias for each ligand condition (averaging O1 and O2).
     """
@@ -358,13 +359,13 @@ function compute_metrics_per_ligand_condition(fakeData, fitData, savedir)
     println("Model Metrics (Per Ligand Condition):")
     println("-"^60)
     
-    n = length(fakeData["x"])
+    n = length(dataTrue["x"])
     
     for cond in ligand_conds
         # Get O1 and O2 data for this condition
-        o1_data = fakeData["O1_$cond"]
+        o1_data = dataTrue["O1_$cond"]
         o1_data_normed = o1_data ./ maximum(o1_data) # 
-        o2_data = fakeData["O2_$cond"]
+        o2_data = dataTrue["O2_$cond"]
         o2_data_normed = o2_data ./ maximum(o2_data)
         o1_fit = fitData["O1_$cond"]
         o1_fit_normed = o1_fit ./ maximum(o1_fit)
@@ -428,7 +429,7 @@ function compute_metrics_per_ligand_condition(fakeData, fitData, savedir)
 end
 
 # Main function with Makie plots
-function generate_all_plots_and_metrics(fakeData, fitted_params, loss_history, savedir, model)
+function generate_all_plots_and_metrics(dataTrue, fitted_params, loss_history, savedir, model)
     """
     Convenience function to generate all plots and compute metrics using Makie.
     """
@@ -438,7 +439,7 @@ function generate_all_plots_and_metrics(fakeData, fitted_params, loss_history, s
     
     # Step 1: Generate fit data ONCE
     println("\n1. Generating model predictions...")
-    fitData = generate_fit_data(fakeData, fitted_params, model)
+    fitData = generate_fit_data(dataTrue, fitted_params, model)
     
     # Step 2: Plot loss history with Makie
     println("\n2. Plotting loss history...")
@@ -446,7 +447,7 @@ function generate_all_plots_and_metrics(fakeData, fitted_params, loss_history, s
     
     # Step 3: Plot fit vs data with Makie
     println("\n3. Plotting fit vs data...")
-    plot_fit_vs_data(fakeData, fitData, savedir)
+    plot_fit_vs_data(dataTrue, fitData, savedir)
     
     # # Step 4: Plot error with Makie
     # println("\n4. Plotting error...")
@@ -454,11 +455,11 @@ function generate_all_plots_and_metrics(fakeData, fitted_params, loss_history, s
     
     # Step 5: Plot residuals with Makie
     println("\n5. Plotting residuals...")
-    plot_residuals(fakeData, fitData, savedir)
+    plot_residuals(dataTrue, fitData, savedir)
     
     # Step 6: Compute metrics
     println("\n6. Computing metrics...")
-    metrics = compute_metrics_per_ligand_condition(fakeData, fitData, savedir)
+    metrics = compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
     
     println("\n" * "="^60)
     println("All plots and metrics generated successfully!")

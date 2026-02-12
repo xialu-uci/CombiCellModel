@@ -11,7 +11,7 @@
 #SBATCH --time=0-00:10:00 # Maximum time.
 
 # hpc3 environment
-module load julia-j
+module load julia-1.12.5
 
 # Debug: Report environment for troubleshooting precompilation issues
 echo "=== Environment Debug Info ==="

@@ -127,7 +127,7 @@ function fw(x::Vector{Float64}, kD::Vector{Float64}, p_class, model::ModelCombiC
         CN = (1 / (1 + g1 * kDi / kP))^nKP * CT
         X = CN^nC / (lambdaX^nC + CN^nC)
 
-        O1_val = XO1 / (XO1 + X)
+        O1_val = X / (XO1 + X)
         O2_val = X
 
         O1i = O1max * O1_val 
