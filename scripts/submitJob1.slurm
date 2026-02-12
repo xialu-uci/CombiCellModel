@@ -17,7 +17,7 @@
 # error and out are default from the first job I ran?
 
 # hpc3 environment
-module load julia-j
+module load julia-1.12.5
 
 # Sync NFS cache and check compiled packages exist
 sync
