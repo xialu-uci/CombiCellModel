@@ -38,12 +38,12 @@ cd $SOURCEPATH
 # date; juliaup update; date
 
 echo "Running Julia depot instantiation"
-date; /usr/bin/time -v stdbuf -oL julia --project=CombiCellModelLearning -e 'using Pkg; Pkg.instantiate(); Pkg.precompile(); using CombiCellModelLearning' \
+date; /usr/bin/time -v stdbuf -oL julia+1.11.6 --project=CombiCellModelLearning -e 'using Pkg; Pkg.instantiate(); Pkg.precompile(); using CombiCellModelLearning' \
 > $OUTPUTPATH/logs/$SLURM_ARRAY_JOB_ID.instantiate.$SLURM_ARRAY_TASK_ID.log 2>&1 ; date
 
 # Verify compiled cache was created
 echo "=== Verifying compiled cache ==="
-echo "Compiled Model8 files:"
+echo "Compiled CombiCellModelLearning files:"
 ls -la $JULIA_DEPOT_PATH/compiled/v1.12.5/CombiCellModelLearning/ 2>/dev/null || echo "WARNING: Model8 not in compiled cache!"
 echo "Cache file checksums (save these to compare with batch jobs):"
 md5sum $JULIA_DEPOT_PATH/compiled/v1.12.5/CombiCellModelLearning/*.ji 2>/dev/null || echo "No .ji files found"
