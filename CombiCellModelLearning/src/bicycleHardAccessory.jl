@@ -39,7 +39,7 @@ final_params_derepr, loss_history = CombiCellModelLearning.bbo_learn(learning_pr
 #savedir = "../tempExp" # change for diff exptrues(length(data["x"]))
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData"
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_fakeData"
-savedir ="./CombiCellLocal/experiments/02152026_bicycleHardAccessory_fakeData"
+savedir ="../CombiCellLocal/experiments/02152026_bicycleHardAccessory_fakeData"
 @save joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
 @save joinpath(savedir, "loss_history.jld2") loss_history
 @save joinpath(savedir, "model.jld2") model
