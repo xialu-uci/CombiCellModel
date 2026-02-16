@@ -10,8 +10,8 @@
 #SBATCH --mem=16G  # Use all available memory on the node
 #SBATCH --array=1-1 ## number of array tasks
 #SBATCH --ntasks=1 ## (-n) number of tasks to launch (PER ARRAY JOB)
-#SBATCH --error=%x.%A.err    ## Slurm error  file, %x - job name, %A job id 
-#SBATCH --out=%x.%A.out      ## Slurm output file, %x - job name, %A job id
+#SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
+#SBATCH --out=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
 #SBATCH --time=0-00:10:00 # Maximum time.
 
 # error and out are default from the first job I ran?
@@ -44,7 +44,7 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 
 # Set up the experiment
 # SOURCEPATH=/pub/stilese/2026/CombiCellModel/CombiCellModelLearning # don't think i need this for this run
-OUTPUTPATH=../CombiCellLocal/experiments/02132026_bicycleHardAccessory_fakeData/
+OUTPUTPATH=../CombiCellLocal/experiments/02152026_bicycleHardAccessory_fakeData/
 
 
 echo "Test1: does bicycleHardAccessory.jl run on hpc3?"
@@ -59,7 +59,7 @@ echo "=== End precompilation check ==="
 
 # execute script
 echo "Running bicycleHardAccessory"
-date; /usr/bin/time -v stdbuf -oL julia --project=CombiCellModelLearning src/bicycleHardAccessory.jl 
+date; /usr/bin/time -v stdbuf -oL julia --project=CombiCellModelLearning CombiCellModelLearning/src/bicycleHardAccessory.jl 
 
 # After job completes, move the logs
 logdate=$(date +%y%m%d)
