@@ -29,7 +29,7 @@ export JULIA_NUM_THREADS=4
 julia -e 'println("Julia threads: ", Threads.nthreads()); println("CPU threads visible: ", Sys.CPU_THREADS)'
 
 # Set up the experiment
-SOURCEPATH=/pub/stilese/2026/CombiCellModel/CombiCellModelLearning 
+SOURCEPATH=/pub/stilese/2026/CombiCellModel/ #have to be in parent folder of project 
 OUTPUTPATH=/pub/stilese/2026/CombiCellModel/tempExp
 
 cd $SOURCEPATH
@@ -38,7 +38,7 @@ cd $SOURCEPATH
 # date; juliaup update; date
 
 echo "Running Julia depot instantiation"
-date; /usr/bin/time -v stdbuf -oL julia+1.11.6 --project=CombiCellModelLearning -e 'using Pkg; Pkg.instantiate(); Pkg.precompile(); using CombiCellModelLearning' \
+date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning -e 'using Pkg; Pkg.instantiate(); Pkg.precompile(); using CombiCellModelLearning' \
 > $OUTPUTPATH/logs/$SLURM_ARRAY_JOB_ID.instantiate.$SLURM_ARRAY_TASK_ID.log 2>&1 ; date
 
 # Verify compiled cache was created

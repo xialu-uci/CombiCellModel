@@ -1,10 +1,10 @@
 # Run from CombiCellModel
 using CombiCellModelLearning
-# using ComponentArrays # i feel like I shouldn't need this in here...
-# using Optimization
-# using OptimizationBBO
-# using Statistics
-# using JLD2
+using ComponentArrays # i feel like I shouldn't need this in here...
+using Optimization
+using OptimizationBBO
+using Statistics
+using JLD2
 # using Makie
 # using CairoMakie
 

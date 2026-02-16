@@ -22,9 +22,9 @@ module load julia-1.12.5
 # Sync NFS cache and check compiled packages exist
 sync
 echo "Checking compiled cache exists:"
-ls -la $JULIA_DEPOT_PATH/compiled/v1.12.5/CombiCellModelLearning/ 2>/dev/null || echo "Model8 not found in compiled cache!"
+ls -la $JULIA_DEPOT_PATH/compiled/v1.11/CombiCellModelLearning/ 2>/dev/null || echo "Model8 not found in compiled cache!"
 echo "Cache file checksums (compare with instantiate output):"
-md5sum $JULIA_DEPOT_PATH/compiled/v1.12.5/CombiCellModelLearning/*.ji 2>/dev/null || echo "No .ji files found"
+md5sum $JULIA_DEPOT_PATH/compiled/v1.11/CombiCellModelLearning/*.ji 2>/dev/null || echo "No .ji files found"
 
 # Debug: Report environment for troubleshooting precompilation issues
 echo "=== Environment Debug Info ==="
@@ -44,7 +44,7 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 
 # Set up the experiment
 # SOURCEPATH=/pub/stilese/2026/CombiCellModel/CombiCellModelLearning # don't think i need this for this run
-OUTPUTPATH=/pub/stilese/2026/CombiCellModel/tempExp
+OUTPUTPATH=../CombiCellLocal/experiments/02132026_bicycleHardAccessory_fakeData/
 
 
 echo "Test1: does bicycleHardAccessory.jl run on hpc3?"
@@ -53,13 +53,13 @@ echo "Test1: does bicycleHardAccessory.jl run on hpc3?"
 echo "=== Testing Model8 load (precompilation check) ==="
 echo "Expected: <5 seconds if precompiled, >60 seconds if recompiling"
 date
-/usr/bin/time -v julia --project=CombiCellModelLearning -e 'using CombiCellModelLearning; println("CombiCellModelLearning loaded successfully")' 2>&1 | grep -E "(User time|Elapsed|Precompiling|CombiCellModelLearning loaded)"
+/usr/bin/time -v julia +1.11.6 --project=CombiCellModelLearning -e 'using CombiCellModelLearning; println("CombiCellModelLearning loaded successfully")' 2>&1 | grep -E "(User time|Elapsed|Precompiling|CombiCellModelLearning loaded)"
 date
 echo "=== End precompilation check ==="
 
 # execute script
 echo "Running bicycleHardAccessory"
-date; /usr/bin/time -v stdbuf -oL julia --project=CombiCellModelLearning bicycleHardAccessory.jl 
+date; /usr/bin/time -v stdbuf -oL julia --project=CombiCellModelLearning src/bicycleHardAccessory.jl 
 
 # After job completes, move the logs
 logdate=$(date +%y%m%d)
