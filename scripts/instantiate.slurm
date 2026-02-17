@@ -1,13 +1,13 @@
 #!/bin/bash
 
-#SBATCH --job-name=combicell_sim_fixedInt  ## job name
+#SBATCH --job-name=combicell_sim_fixedInt_inst  ## job name
 #SBATCH -p free              ## use free partition
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
 #SBATCH --mem=16G  # Use all available memory on the node
 #SBATCH --array=1-1 ## number of array tasks
 #SBATCH --ntasks=1 ## (-n) number of tasks to launch (PER ARRAY JOB)
-#SBATCH --error=%x.%A.err    ## Slurm error  file, %x - job name, %A job id 
-#SBATCH --out=%x.%A.out      ## Slurm output file, %x - job name, %A job id
+#SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
+#SBATCH --out=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
 #SBATCH --time=0-00:10:00 # Maximum time.
 
 # hpc3 environment
@@ -30,7 +30,7 @@ julia -e 'println("Julia threads: ", Threads.nthreads()); println("CPU threads v
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel/ #have to be in parent folder of project 
-OUTPUTPATH=/pub/stilese/2026/CombiCellLocal/experiments/02152026_bicycleHardAccessory_fakeData
+OUTPUTPATH=../CombiCellLocal/experiments/02152026_bicycleHardAccessory_fakeData
 
 cd $SOURCEPATH
 
