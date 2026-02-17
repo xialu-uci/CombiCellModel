@@ -5,11 +5,12 @@ struct ModelCombiClassic <: AbstractClassicalModel
     u0::Vector{Float64}  # Not used for algebraic model, but kept for compatibility for now...
     params_repr_ig::ComponentArray{Float64} # biophysical parameters mapped to spaces suitable for optimization # log, logit, sqrt transforms
     params_derepresented_ig::ComponentArray{Float64}
+    
 end
 
-function make_ModelCombiClassic(;)
+function make_ModelCombiClassic(;intPoint1 = 11, intPoint2 = 12)
    # close initial guess 
-    p_classical_derepresented_ig = ComponentArray(
+    p_base_derepresented_ig = ComponentArray(
         fI=0.5,
         alpha=1.9e6,
         tT=600,
@@ -22,8 +23,8 @@ function make_ModelCombiClassic(;)
         XO1=0.5, #(0.3,0.7)
         O1max=0.8, #(0.7,1.0)
         O2max=100.0, #(80,120)
-        extraCD2 = 0.97,
-        extraPD1 = 70.0
+        # extraCD2 = 0.97,
+        # extraPD1 = 70.0
     )
 
     # p_extra_derepresented_ig = ComponentArray(
@@ -34,13 +35,12 @@ function make_ModelCombiClassic(;)
 
     # tight bounds around true params
 
-    p_derepresented_lowerbounds = ComponentArray(
+    p_base_derepresented_lowerbounds = ComponentArray(
         fI=0.01, # don't let this be zero lol
         alpha=1e6,
         tT=100,
         g1=0.01,
         k_on_2d=10.0,
-        # kD=1.0, # TODO: this is given, figure out how to get it in here
         kP=0.01,
         nKP=1.0,
         lambdaX=0.01,
@@ -48,8 +48,8 @@ function make_ModelCombiClassic(;)
         XO1=0.01,
         O1max=0.5,
         O2max=20.0,
-        extraCD2 = 0.5, # have to change how handling this later
-        extraPD1 = 20.0
+        # extraCD2 = 0.5, # have to change how handling this later
+        # extraPD1 = 20.0
     )
 
     # p_extra_derepresented_lowerbounds = ComponentArray(
@@ -58,13 +58,12 @@ function make_ModelCombiClassic(;)
     # )
 
 
-    p_derepresented_upperbounds = ComponentArray(
+    p_base_derepresented_upperbounds = ComponentArray(
         fI= 1.0,
         alpha=1e7,
         tT=1000.0,
         g1=1.0,
         k_on_2d=20.0,
-        # kD=1e3, # TODO: this is given, figure out how to get it in here
         kP=1.0,
         nKP=4,
         lambdaX=1.0,
@@ -72,10 +71,30 @@ function make_ModelCombiClassic(;)
         XO1=1.0,
         O1max=1.0,
         O2max=200.0,
-        extraCD2 = 1.0; # have to change how handling later
-        extraPD1 = 200.0
+        # extraCD2 = 1.0; # have to change how handling later
+        # extraPD1 = 200.0
     )
 
+
+    p_classical_derepresented_ig = ComponentArray(
+        ; p_base_derepresented_ig...,
+        extraCD2 = p_base_derepresented_ig[intPoint1],
+        extraPD1 = p_base_derepresented_ig[intPoint2]
+    )
+
+    p_derepresented_lowerbounds = ComponentArray(
+        ; p_base_derepresented_lowerbounds...,
+        extraCD2 = p_base_derepresented_lowerbounds[intPoint1],
+        extraPD1 = p_base_derepresented_lowerbounds[intPoint2]
+    )
+
+     p_derepresented_upperbounds = ComponentArray(
+        ; p_base_derepresented_upperbounds...,
+        extraCD2 = p_base_derepresented_upperbounds[intPoint1],
+        extraPD1 = p_base_derepresented_upperbounds[intPoint2]
+    )
+
+   
     # p_extra_derepresented_upperbounds = ComponentArray(
     #     extraCD2 = p_classical_derepresented_upperbounds.O1max,
     #     extraPD1 = p_classical_derepresented_upperbounds.O2max
@@ -101,6 +120,7 @@ function make_ModelCombiClassic(;)
         
     )
 
+
     return ModelCombiClassic(
         p_classical_derepresented_ig,
        # p_extra_derepresented_ig?
@@ -109,6 +129,7 @@ function make_ModelCombiClassic(;)
         u0,
         params_repr_ig,
         params_derepresented_ig,
+        
     )
 end
 
@@ -165,6 +186,7 @@ end
 #     return O1, O2
 
 # end
+
 
 function represent_on_type(p_derepresented, model_by_type::Type{ModelCombiClassic})
     # initial transformations, subject to change
