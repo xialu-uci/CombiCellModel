@@ -7,12 +7,12 @@
 # end
 
 # let's make this whole section a function bbo_learn(learning_problem, p_repr_ig)
-function bbo_learn(learning_problem, p_repr_ig)
+function bbo_learn(learning_problem, p_repr_ig, intPoints)
 
     function obj_func(x, p)
         p_repr = CombiCellModelLearning.reconstruct_learning_params_from_array(x, p_repr_ig,learning_problem.model) # this is where params are updated # the trick is the x is the actual params we want. 
         # only pass through p_repr_ig for the keys
-        return CombiCellModelLearning.get_loss(p_repr; learning_problem=learning_problem)
+        return CombiCellModelLearning.get_loss(p_repr, intPoints; learning_problem=learning_problem)
     end
     # initial guess params array
     classical_params_array = collect(values(copy(p_repr_ig)))
@@ -41,7 +41,7 @@ function bbo_learn(learning_problem, p_repr_ig)
     # solve optimization problem
     sol = solve(prob, BBO_adaptive_de_rand_1_bin(); callback=callback, maxiters=maxiters)
     final_params_repr = CombiCellModelLearning.reconstruct_learning_params_from_array(sol.minimizer, p_repr_ig, learning_problem.model)
-    final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, learning_problem.model)
+    final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, intPoints, learning_problem.model)
 
     return final_params_derepr, loss_history
 end

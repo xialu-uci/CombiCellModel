@@ -5,6 +5,7 @@ struct ModelCombiClassic <: AbstractClassicalModel
     u0::Vector{Float64}  # Not used for algebraic model, but kept for compatibility for now...
     params_repr_ig::ComponentArray{Float64} # biophysical parameters mapped to spaces suitable for optimization # log, logit, sqrt transforms
     params_derepresented_ig::ComponentArray{Float64}
+    intPoints::ComponentArray{Int64}
     
 end
 
@@ -94,6 +95,11 @@ function make_ModelCombiClassic(;intPoint1 = 11, intPoint2 = 12)
         extraPD1 = p_base_derepresented_upperbounds[intPoint2]
     )
 
+     intPoints = ComponentArray(
+        intPoint1 = intPoint1,
+        intPoint2 = intPoint2
+    )
+
    
     # p_extra_derepresented_upperbounds = ComponentArray(
     #     extraCD2 = p_classical_derepresented_upperbounds.O1max,
@@ -107,7 +113,7 @@ function make_ModelCombiClassic(;intPoint1 = 11, intPoint2 = 12)
     u0 = [0.0]
 
     params_repr_ig = ComponentArray(
-        p_classical=represent_on_type(p_classical_derepresented_ig, ModelCombiClassic),
+        p_classical=represent_on_type(p_classical_derepresented_ig, intPoints, ModelCombiClassic),
         # p_extra = represent_on_type(p_extra_derepresented_ig, ModelCombiClassic)
         # no flex
         
@@ -119,6 +125,8 @@ function make_ModelCombiClassic(;intPoint1 = 11, intPoint2 = 12)
         # no flex
         
     )
+    
+    
 
 
     return ModelCombiClassic(
@@ -129,7 +137,7 @@ function make_ModelCombiClassic(;intPoint1 = 11, intPoint2 = 12)
         u0,
         params_repr_ig,
         params_derepresented_ig,
-        
+        intPoints
     )
 end
 
@@ -186,9 +194,21 @@ end
 #     return O1, O2
 
 # end
+function transform(extra, intPoint)
+    if intPoint == 7|| intPoint ==9
+        return sqrt(extra)
+    end
+return log(extra)
+end
 
+function invTransform(extra, intPoint)
+    if intPoint == 7|| intPoint ==9
+        return (extra)^2
+    end
+return exp(extra)
+end
 
-function represent_on_type(p_derepresented, model_by_type::Type{ModelCombiClassic})
+function represent_on_type(p_derepresented, intPoints, model_by_type::Type{ModelCombiClassic})
     # initial transformations, subject to change
     return ComponentArray(
         fI=log(p_derepresented.fI),  # log
@@ -204,12 +224,12 @@ function represent_on_type(p_derepresented, model_by_type::Type{ModelCombiClassi
         XO1=log(p_derepresented.XO1),
         O1max=log(p_derepresented.O1max),  # log
         O2max=log(p_derepresented.O2max),
-        extraCD2 = log(p_derepresented.extraCD2), # log for now but what if it has to be sqrt ??
-        extraPD1 = log(p_derepresented.extraPD1) # log for now but what if it has to sqrt??
+        extraCD2 = transform(p_derepresented.extraCD2, intPoints[1]), # log for now but what if it has to be sqrt ??
+        extraPD1 = transform(p_derepresented.extraPD1, intPoints[2]) # log for now but what if it has to sqrt??
     )
 end
 
-function derepresent(p_repr, model::ModelCombiClassic)
+function derepresent(p_repr, intPoints, model::ModelCombiClassic)
     return ComponentArray(
         fI=exp(p_repr.fI),  # TODO: rerun bicycle.jl given fix
         alpha=exp(p_repr.alpha),
@@ -224,7 +244,7 @@ function derepresent(p_repr, model::ModelCombiClassic)
         XO1=exp(p_repr.XO1),
         O1max=exp(p_repr.O1max),  
         O2max=exp(p_repr.O2max),
-        extraCD2 = exp(p_repr.extraCD2),
-        extraPD1 = exp(p_repr.extraPD1)
+        extraCD2 = invTransform(p_repr.extraCD2, intPoints[1]), # log for now but what if it has to be sqrt ??
+        extraPD1 = invTransform(p_repr.extraPD1, intPoints[2])
     )
 end

@@ -1,7 +1,7 @@
 
-function get_loss(p_repr; learning_problem::LearningProblem{M}) where {M<:AbstractModel}
+function get_loss(p_repr, intPoints; learning_problem::LearningProblem{M}) where {M<:AbstractModel}
     # TODO: loss strategy must be different from pulsatile model learning
-    params_derepresented = derepresent_all(p_repr, learning_problem.model)
+    params_derepresented = derepresent_all(p_repr, intPoints, learning_problem.model)
     x = learning_problem.data["x"]
     KD = learning_problem.data["KD"]
     

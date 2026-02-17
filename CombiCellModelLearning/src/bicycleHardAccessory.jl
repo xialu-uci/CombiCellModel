@@ -27,19 +27,19 @@ p_repr_ig = deepcopy(model.params_repr_ig)
 learning_problem = CombiCellModelLearning.LearningProblem(
      data =fakeData, # fakeData or data (real)
      model= model,
-     p_repr_lb=CombiCellModelLearning.represent(model.p_derepresented_lowerbounds, model),
-     p_repr_ub=CombiCellModelLearning.represent(model.p_derepresented_upperbounds, model),
+     p_repr_lb=CombiCellModelLearning.represent(model.p_derepresented_lowerbounds, model.intPoints, model),
+     p_repr_ub=CombiCellModelLearning.represent(model.p_derepresented_upperbounds, model.intPoints, model),
      mask = trues(fakeLength), # or fakeLength # no mask for now
      loss_strategy="normalized")
 
 
 
-final_params_derepr, loss_history = CombiCellModelLearning.bbo_learn(learning_problem, p_repr_ig)
+final_params_derepr, loss_history = CombiCellModelLearning.bbo_learn(learning_problem, p_repr_ig, model.intPoints)
 
 #savedir = "../tempExp" # change for diff exptrues(length(data["x"]))
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData"
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_fakeData"
-savedir ="../CombiCellLocal/experiments/02152026_bicycleHardAccessory_fakeData"
+savedir ="../CombiCellLocal/experiments/02172026_bicycleHardAccessory_wTrans_fakeData"
 @save joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
 @save joinpath(savedir, "loss_history.jld2") loss_history
 @save joinpath(savedir, "model.jld2") model

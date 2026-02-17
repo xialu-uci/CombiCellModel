@@ -6,18 +6,18 @@ abstract type AbstractClassicalModel <: AbstractModel end
 abstract type AbstractFlexiModel <: AbstractModel end
 
 # Generic represent function (100% identical across all models)
-function represent(p_derepresented, model::AbstractModel)
-    return represent_on_type(p_derepresented, typeof(model))
+function represent(p_derepresented, intPoints, model::AbstractModel)
+    return represent_on_type(p_derepresented, intPoints, typeof(model))
 end
 
 # Template-based derepresent_all functions
-function derepresent_all(p_repr_all, model::AbstractClassicalModel)
-    return ComponentArray(p_classical=derepresent(p_repr_all.p_classical, model))
+function derepresent_all(p_repr_all, intPoints, model::AbstractClassicalModel)
+    return ComponentArray(p_classical=derepresent(p_repr_all.p_classical, intPoints, model))
 end
 
-function derepresent_all(p_repr_all, model::AbstractFlexiModel)  
+function derepresent_all(p_repr_all, intPoints, model::AbstractFlexiModel)  # not using at all yet
     result_dict = Dict{Symbol, Any}(
-        :p_classical => derepresent(p_repr_all.p_classical, model)
+        :p_classical => derepresent(p_repr_all.p_classical, intPoints, model)
     )
     
     # Add flexi params that actually exist in the parameter structure
@@ -77,7 +77,7 @@ function check_parameter_bounds(best_p, model, model_name, dataset_desc)
     """Check if optimized parameters are within the specified bounds"""
     
     # Get derepresented parameters (biophysical values)
-    p_derepresented = derepresent_all(best_p, model)
+    p_derepresented = derepresent_all(best_p, intPoints, model)
     
     # Get model bounds
     lower_bounds = model.p_derepresented_lowerbounds
