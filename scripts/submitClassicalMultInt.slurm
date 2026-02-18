@@ -13,7 +13,7 @@
 #SBATCH --ntasks=1 ## (-n) number of tasks to launch (PER ARRAY JOB)
 #SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
 #SBATCH --out=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
-#SBATCH --time=0-00:10:00 # Maximum time.
+#SBATCH --time=0-00:40:00 # Maximum time.
 
 # error and out are default from the first job I ran?
 
