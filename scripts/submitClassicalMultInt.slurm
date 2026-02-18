@@ -44,7 +44,7 @@ julia -e 'println("Julia threads: ", Threads.nthreads()); println("CPU threads v
 julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())'
 
 # Set up the experiment
-# SOURCEPATH=/pub/stilese/2026/CombiCellModel/CombiCellModelLearning # don't think i need this for this run
+SOURCEPATH=/pub/stilese/2026/CombiCellModel/ # don't think i need this for this run
 OUTPUTPATH=../CombiCellLocal/experiments/02182026_realData/
 
 
