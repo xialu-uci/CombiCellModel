@@ -20,8 +20,8 @@ realLength = length(data["x"])
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
 exp = "02182026_fakeData"
-for i in 11:12
-    for j in 11:12
+for i in 1:12
+    for j in 1:12
           dirName = "cd2" * "-"* intPoints[i] * "-" * "pd1"* intPoints[j]
           savedir = mkdir("../CombiCellLocal/experiments/" * exp * "/" * dirName)
           model = CombiCellModelLearning.make_ModelCombiClassic(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
