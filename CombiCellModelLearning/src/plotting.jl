@@ -356,8 +356,8 @@ function compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
     ligand_conds = ["00", "10", "01", "11"]
     metrics_dict = Dict{String, Float64}()
     
-    println("Model Metrics (Per Ligand Condition):")
-    println("-"^60)
+    # println("Model Metrics (Per Ligand Condition):")
+    # println("-"^60)
     
     n = length(dataTrue["x"])
     
@@ -399,12 +399,12 @@ function compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
         metrics_dict["RMSE_O2_$cond"] = rmse_o2
         
         # Print formatted output
-        println("Ligand Condition $cond:")
-        println("  Combined RMSE:  $(round(rmse, digits=6))")
-        println("  O1 RMSE:                $(round(rmse_o1, digits=6))")
-        println("  O2 RMSE:                $(round(rmse_o2, digits=6))")
-        println("  Bias:                   $(round(bias, digits=6))")
-        println()
+        # println("Ligand Condition $cond:")
+        # println("  Combined RMSE:  $(round(rmse, digits=6))")
+        # println("  O1 RMSE:                $(round(rmse_o1, digits=6))")
+        # println("  O2 RMSE:                $(round(rmse_o2, digits=6))")
+        # println("  Bias:                   $(round(bias, digits=6))")
+        # println()
     end
     
     # Calculate overall metrics across all conditions
@@ -415,10 +415,10 @@ function compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
     metrics_dict["Worse_bias_all_conds"] = maximum(cond_bias)
     
     
-    println("-"^60)
-    println("Overall Metrics:")
-    println("  Worse RMSE across conditions:  $(round(maximum(cond_rmse), digits=6))")
-    println("  worst Bias across conditions:  $(round(maximum(cond_bias), digits=6))")
+    # println("-"^60)
+    # println("Overall Metrics:")
+    # println("  Worse RMSE across conditions:  $(round(maximum(cond_rmse), digits=6))")
+    # println("  worst Bias across conditions:  $(round(maximum(cond_bias), digits=6))")
     
     # Save metrics
     metrics_path = joinpath(savedir, "model_metrics_per_condition.jld2")
@@ -467,3 +467,198 @@ function generate_all_plots_and_metrics(dataTrue, fitted_params, loss_history, s
     
     return metrics, fitData
 end
+
+using JLD2, CairoMakie
+
+function create_metrics_heatmaps(base_path::String)
+    """
+    Creates 12x12 heatmaps for worst RMSE and worst bias from all model folders.
+    
+    Args:
+        base_path: Path to the parent folder containing all model folders (e.g., "02182026_fakeData")
+    
+    Returns:
+        Dictionary with heatmap figures
+    """
+    
+    # Define the intPoints order
+    intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP", "lamdaX", "nC", "XO1", "O1max", "O2max"]
+    string_to_idx = Dict(label => i for (i, label) in enumerate(intPoints))
+    
+    # Get all folders matching pattern
+    all_folders = readdir(base_path)
+    model_folders = filter(f -> occursin(r"^cd2-.+-pd1-.+$", f), all_folders)
+    
+    println("Found $(length(model_folders)) model folders")
+    
+    # Parse intPoints from folder names
+    # Format: cd2-{i}-pd1-{j}
+    rmse_matrix = fill(NaN, 12, 12)
+    bias_matrix = fill(NaN, 12, 12)
+    
+    # Track which indices we've found
+    i_vals = Int[]
+    j_vals = Int[]
+    
+    for folder in model_folders
+        # Parse folder name
+        parts = split(folder, "-")
+        if length(parts) == 4 && parts[1] == "cd2" && parts[3] == "pd1"
+            i_str = parts[2]
+            j_str = parts[4]
+
+            # Check if strings are valid
+            if haskey(string_to_idx, i_str) && haskey(string_to_idx, j_str)
+                i = string_to_idx[i_str]
+                j = string_to_idx[j_str]
+                
+                # Load metrics file
+                metrics_path = joinpath(base_path, folder, "model_metrics_per_condition.jld2")
+                
+                if isfile(metrics_path)
+                    metrics = load(metrics_path)["metrics_dict"]
+                    
+                    # Extract worst metrics
+                    if haskey(metrics, "Worst_RMSE_all_conds")
+                        val = metrics["Worst_RMSE_all_conds"]
+                        if !isnan(val) && !isinf(val)
+                            rmse_matrix[i, j] = val
+                        end
+                    end
+                    
+                    # Handle bias with both possible keys
+                    if haskey(metrics, "Worse_bias_all_conds")
+                        val = metrics["Worse_bias_all_conds"]
+                        if !isnan(val) && !isinf(val)
+                            bias_matrix[i, j] = val
+                        end
+                    elseif haskey(metrics, "Worst_bias_all_conds")
+                        val = metrics["Worst_bias_all_conds"]
+                        if !isnan(val) && !isinf(val)
+                            bias_matrix[i, j] = val
+                        end
+                    end
+                    
+                    push!(i_vals, i)
+                    push!(j_vals, j)
+                else
+                    @warn "No metrics file found in $folder"
+                end
+            else
+                @warn "Unknown label in folder name: $folder (i_str='$i_str', j_str='$j_str')"
+            end
+        end
+    end
+    
+    # Check what range of indices we have
+    i_range = sort(unique(i_vals))
+    j_range = sort(unique(j_vals))
+    println("\nFound indices:")
+    println("  i values (cd2-{i}): $i_range")
+    println("  j values (pd1-{j}): $j_range")
+    
+    # Get valid ranges for color scaling
+    valid_rmse = filter(!isnan, rmse_matrix[:])
+    valid_rmse = filter(!isinf, valid_rmse)
+    valid_bias = filter(!isnan, bias_matrix[:])
+    valid_bias = filter(!isinf, valid_bias)
+    
+    if isempty(valid_rmse)
+        error("No valid RMSE data found to plot!")
+    end
+    
+    if isempty(valid_bias)
+        error("No valid bias data found to plot!")
+    end
+    
+    # Create heatmaps
+    figures = Dict{String, Figure}()
+    
+    # RMSE Heatmap
+    fig_rmse = Figure(size=(1200, 1000))
+    ax_rmse = Makie.Axis(fig_rmse[1, 1],
+                  title="Worst RMSE Across All Conditions",
+                  xlabel="pd1 parameter",
+                  ylabel="cd2 parameter",
+                  xticks=(1:12, intPoints),
+                  yticks=(1:12, intPoints))
+    
+    # Rotate x-axis labels for better readability
+    ax_rmse.xticklabelrotation = π/4
+    ax_rmse.xticklabelalign = (:right, :center)
+    
+    hm_rmse = heatmap!(ax_rmse, 1:12, 1:12, rmse_matrix,
+                       colormap=:viridis,
+                       colorrange=(minimum(valid_rmse), maximum(valid_rmse)),
+                       nan_color=:lightgray)
+    
+    # Add text annotations for RMSE values
+    for i in 1:12, j in 1:12
+        if !isnan(rmse_matrix[i, j]) && !isinf(rmse_matrix[i, j])
+            text!(ax_rmse, i, j, 
+                  text=string(round(rmse_matrix[i, j], digits=3)),
+                  color=:white,
+                  align=(:center, :center),
+                  fontsize=8,
+                  strokewidth=0.5,
+                  strokecolor=:black)
+        end
+    end
+
+    Colorbar(fig_rmse[1, 2], hm_rmse, label="RMSE")
+    
+    # Bias Heatmap
+    fig_bias = Figure(size=(1200, 1000))
+    ax_bias = Makie.Axis(fig_bias[1, 1],
+                  title="Worst Bias Across All Conditions",
+                  xlabel="pd1 parameter",
+                  ylabel="cd2 parameter",
+                  xticks=(1:12, intPoints),
+                  yticks=(1:12, intPoints))
+    
+    # Rotate x-axis labels for better readability
+    ax_bias.xticklabelrotation = π/4
+    ax_bias.xticklabelalign = (:right, :center)
+    
+    hm_bias = heatmap!(ax_bias, 1:12, 1:12, bias_matrix,
+                       colormap=:plasma,
+                       colorrange=(minimum(valid_bias), maximum(valid_bias)),
+                       nan_color=:lightgray)
+    
+    # Add text annotations for bias values
+    for i in 1:12, j in 1:12
+        if !isnan(bias_matrix[i, j]) && !isinf(bias_matrix[i, j])
+            text!(ax_bias, i, j, 
+                  text=string(round(bias_matrix[i, j], digits=3)),
+                  color=:white,
+                  align=(:center, :center),
+                  fontsize=8,
+                  strokewidth=0.5,
+                  strokecolor=:black)
+        end
+    end
+    
+    Colorbar(fig_bias[1, 2], hm_bias, label="Bias")
+    
+    # Save figures
+    save(joinpath(base_path, "rmse_heatmap.png"), fig_rmse)
+    save(joinpath(base_path, "bias_heatmap.png"), fig_bias)
+    println("\nHeatmaps saved to:")
+    println("  RMSE: $(joinpath(base_path, "rmse_heatmap.png"))")
+    println("  Bias: $(joinpath(base_path, "bias_heatmap.png"))")
+    
+    figures["rmse"] = fig_rmse
+    figures["bias"] = fig_bias
+    
+    # Print summary statistics
+    println("\n" * "="^60)
+    println("Summary Statistics:")
+    println("="^60)
+    println("RMSE - Min: $(minimum(valid_rmse)), Max: $(maximum(valid_rmse)), Mean: $(mean(valid_rmse))")
+    println("Bias - Min: $(minimum(valid_bias)), Max: $(maximum(valid_bias)), Mean: $(mean(valid_bias))")
+    println("\nCells with valid RMSE: $(length(valid_rmse))/144")
+    println("Cells with valid Bias: $(length(valid_bias))/144")
+    
+    return figures, rmse_matrix, bias_matrix
+end
+
