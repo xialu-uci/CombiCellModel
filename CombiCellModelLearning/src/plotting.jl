@@ -377,8 +377,8 @@ function compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
         all_fit = vcat(o1_fit, o2_fit)
 
         # standards
-        all_data_normed = vcat(o1_data_normed, o2_data_normed)
-        all_fit_normed = vcat(o1_fit_normed, o2_fit_normed)
+        # all_data_normed = vcat(o1_data_normed, o2_data_normed)
+        # all_fit_normed = vcat(o1_fit_normed, o2_fit_normed)
         
         # Calculate RMSE for this condition
         rmse = sqrt(mean((all_data .- all_fit).^2))
