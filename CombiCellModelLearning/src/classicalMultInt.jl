@@ -18,11 +18,12 @@ fakeLength = length(fakeData["x"])
 realLength = length(data["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
-today = "02172026"
+intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
+exp = "02182026_fakeData"
 for i in 11:12
     for j in 11:12
-          dirName = string(i) * "-" * string(j) * "_fakeData"
-          savedir = mkdir("../CombiCellLocal/experiments/" * today * "/" * dirName)
+          dirName = "cd2" * "-"* intPoints[i] * "-" * "pd1"* intPoints[j]
+          savedir = mkdir("../CombiCellLocal/experiments/" * exp * "/" * dirName)
           model = CombiCellModelLearning.make_ModelCombiClassic(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
 
           p_repr_ig = deepcopy(model.params_repr_ig)
