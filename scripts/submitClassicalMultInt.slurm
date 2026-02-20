@@ -45,7 +45,7 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel/ # don't think i need this for this run
-OUTPUTPATH=../CombiCellLocal/experiments/02182026_realData/
+OUTPUTPATH=../CombiCellLocal/experiments/0220_realData_testParallel1
 
 
 echo "Test1: does bicycleHardAccessory.jl run on hpc3?"
