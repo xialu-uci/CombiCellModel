@@ -22,9 +22,10 @@ intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "
 exp = "02182026_realData"
 #for i in 1:12
  #   for j in 1:12
- [i,j] = ARGS
- println(i,j)
- exit
+ i = ARGS[1]
+ j = ARGS[2]
+ # println(i,j)
+ # exit
           dirName = "cd2" * "-"* intPoints[i] * "-" * "pd1"* intPoints[j]
           savedir = mkdir("../CombiCellLocal/experiments/" * exp * "/" * dirName)
           model = CombiCellModelLearning.make_ModelCombiClassic(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
