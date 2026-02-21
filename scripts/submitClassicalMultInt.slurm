@@ -12,18 +12,19 @@
 #SBATCH --array=1-4 ## number of array tasks # change for parellization
 #SBATCH --ntasks=1 ## (-n) number of tasks to launch (PER ARRAY JOB)
 #SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
-#SBATCH --out=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
+#SBATCH --output=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
 #SBATCH --time=0-00:40:00 # Maximum time.
 
 # error and out are default from the first job I ran?
 
 # hpc3 environment
 module load julia-1.12.5
+export JULIA_DEPOT_PATH=/pub/stilese/opt/julia-1.12.5/depot
 
 # Sync NFS cache and check compiled packages exist
 sync
 echo "Checking compiled cache exists:"
-ls -la $JULIA_DEPOT_PATH/compiled/v1.11/CombiCellModelLearning/ 2>/dev/null || echo "Model8 not found in compiled cache!"
+ls -la $JULIA_DEPOT_PATH/compiled/v1.11/CombiCellModelLearning/ 2>/dev/null || echo "CombiCellModelLearning not found in compiled cache!"
 echo "Cache file checksums (compare with instantiate output):"
 md5sum $JULIA_DEPOT_PATH/compiled/v1.11/CombiCellModelLearning/*.ji 2>/dev/null || echo "No .ji files found"
 
@@ -44,7 +45,7 @@ julia -e 'println("Julia threads: ", Threads.nthreads()); println("CPU threads v
 julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())'
 
 # Set up the experiment
-SOURCEPATH=/pub/stilese/2026/CombiCellModel/ # don't think i need this for this run
+SOURCEPATH=/pub/stilese/2026/CombiCellModel # don't think i need this for this run
 OUTPUTPATH=../CombiCellLocal/experiments/0220_realData_testParallel1
 
 
@@ -59,7 +60,7 @@ date
 echo "=== End precompilation check ==="
 
 # execute script
-INPUT=$SOURCEPATH/CombiCellModelLearning/scripts/144args.txt
+INPUT=$SOURCEPATH/scripts/144args.txt
 ARGS=$(awk "NR==$SLURM_ARRAY_TASK_ID" $INPUT)
 
 echo "Running classicalMultInt"

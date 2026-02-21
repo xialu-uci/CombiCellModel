@@ -7,11 +7,13 @@
 #SBATCH --array=1-1 ## number of array tasks
 #SBATCH --ntasks=1 ## (-n) number of tasks to launch (PER ARRAY JOB)
 #SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
-#SBATCH --out=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
+#SBATCH --output=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
 #SBATCH --time=0-00:10:00 # Maximum time.
 
 # hpc3 environment
 module load julia-1.12.5
+export JULIA_DEPOT_PATH=/pub/stilese/opt/julia-1.12.5/depot
+
 
 # Debug: Report environment for troubleshooting precompilation issues
 echo "=== Environment Debug Info ==="
@@ -34,6 +36,8 @@ OUTPUTPATH=../CombiCellLocal/experiments/0220_realData_testParallel1
 
 cd $SOURCEPATH
 
+mkdir -p $OUTPUTPATH/logs
+
 # echo "Updating julia using juliaup"
 # date; juliaup update; date
 
@@ -44,9 +48,9 @@ date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning
 # Verify compiled cache was created
 echo "=== Verifying compiled cache ==="
 echo "Compiled CombiCellModelLearning files:"
-ls -la $JULIA_DEPOT_PATH/compiled/v1.12.5/CombiCellModelLearning/ 2>/dev/null || echo "WARNING: Model8 not in compiled cache!"
+ls -la $JULIA_DEPOT_PATH/compiled/v1.11/CombiCellModelLearning/ 2>/dev/null || echo "WARNING: CombiCellModelLearning not in compiled cache!"
 echo "Cache file checksums (save these to compare with batch jobs):"
-md5sum $JULIA_DEPOT_PATH/compiled/v1.12.5/CombiCellModelLearning/*.ji 2>/dev/null || echo "No .ji files found"
+md5sum $JULIA_DEPOT_PATH/compiled/v1.11/CombiCellModelLearning/*.ji 2>/dev/null || echo "No .ji files found"
 echo "Sync to flush NFS cache:"
 sync
 
