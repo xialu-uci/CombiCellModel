@@ -45,10 +45,10 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel/ # don't think i need this for this run
-OUTPUTPATH=../CombiCellLocal/experiments/0220_realData_testParallel1
+OUTPUTPATH=../CombiCellLocal/experiments/0220_realData_testParallel1/
 
 
-echo "Test1: does bicycleHardAccessory.jl run on hpc3?"
+echo "Test1: does parallelized classicalMultInt.jl run on hpc3?"
 
 # Test if Model8 loads without recompilation (should be <5 seconds if precompiled)
 echo "=== Testing Model8 load (precompilation check) ==="
