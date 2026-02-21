@@ -9,7 +9,7 @@
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
 #SBATCH --mem=16G  # Use all available memory on the node
-#SBATCH --array=1-1 ## number of array tasks
+#SBATCH --array=1-4 ## number of array tasks # change for parellization
 #SBATCH --ntasks=1 ## (-n) number of tasks to launch (PER ARRAY JOB)
 #SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
 #SBATCH --out=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
@@ -59,8 +59,11 @@ date
 echo "=== End precompilation check ==="
 
 # execute script
-echo "Running bicycleHardAccessory"
-date; /usr/bin/time -v stdbuf -oL julia --project=CombiCellModelLearning CombiCellModelLearning/src/classicalMultInt.jl 
+INPUT=$SOURCEPATH/CombiCellModelLearning/scripts/144args.txt
+ARGS=$(awk "NR==$SLURM_ARRAY_TASK_ID" $INPUT)
+
+echo "Running classicalMultInt"
+date; /usr/bin/time -v stdbuf -oL julia --project=CombiCellModelLearning CombiCellModelLearning/src/classicalMultInt.jl $ARGS
 
 # After job completes, move the logs
 logdate=$(date +%y%m%d)

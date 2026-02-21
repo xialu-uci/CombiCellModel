@@ -20,8 +20,12 @@ realLength = length(data["x"])
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
 exp = "02182026_realData"
-for i in 1:12
-    for j in 1:12
+#for i in 1:12
+ #   for j in 1:12
+ i = ARGS[1]
+ j = ARGS[2]
+ # println(i,j)
+ # exit
           dirName = "cd2" * "-"* intPoints[i] * "-" * "pd1"* intPoints[j]
           savedir = mkdir("../CombiCellLocal/experiments/" * exp * "/" * dirName)
           model = CombiCellModelLearning.make_ModelCombiClassic(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
@@ -47,9 +51,9 @@ for i in 1:12
           @save joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
           @save joinpath(savedir, "loss_history.jld2") loss_history
           @save joinpath(savedir, "model.jld2") model
-    end
+  #  end
 
-end
+# end
 
 
 # # Now use the functions after your optimization:base_path
