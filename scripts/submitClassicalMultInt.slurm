@@ -60,8 +60,7 @@ date
 echo "=== End precompilation check ==="
 
 # execute script
-cd $SOURCEPATH
-INPUT=./scripts/144args.txt
+INPUT=$SOURCEPATH/scripts/144args.txt
 ARGS=$(awk "NR==$SLURM_ARRAY_TASK_ID" $INPUT)
 
 echo "Running classicalMultInt"

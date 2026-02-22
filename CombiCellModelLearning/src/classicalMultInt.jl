@@ -22,8 +22,8 @@ intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "
 exp = "02182026_realData"
 #for i in 1:12
  #   for j in 1:12
- i = ARGS[1]
- j = ARGS[2]
+i = parse(Int, ARGS[1])
+j = parse(Int, ARGS[2])
  # println(i,j)
  # exit
           dirName = "cd2" * "-"* intPoints[i] * "-" * "pd1"* intPoints[j]
