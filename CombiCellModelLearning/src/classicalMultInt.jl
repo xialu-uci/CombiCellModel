@@ -19,7 +19,7 @@ realLength = length(data["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "02182026_realData"
+exp = "../CombiCellLocal/experiments/0220_realData_testParallel1"
 #for i in 1:12
  #   for j in 1:12
 i = parse(Int, ARGS[1])
