@@ -9,7 +9,7 @@
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
 #SBATCH --mem=16G  # Use all available memory on the node
-#SBATCH --array=1-4 ## number of array tasks # change for parellization
+#SBATCH --array=1-144 ## number of array tasks # change for parellization
 #SBATCH --ntasks=1 ## (-n) number of tasks to launch (PER ARRAY JOB)
 #SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
 #SBATCH --output=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
@@ -46,7 +46,7 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel # don't think i need this for this run
-OUTPUTPATH=../CombiCellLocal/experiments/0220_realData_testParallel1
+OUTPUTPATH=../CombiCellLocal/experiments/02222026_realData_simultaneous
 
 RUNNAME=combicell_parTests${SLURM_ARRAY_TASK_ID}
 
