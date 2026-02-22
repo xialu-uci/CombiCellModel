@@ -69,7 +69,7 @@ echo "Arguments: $ARGS"
 
 
 echo "Running classicalMultInt"
-date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning CombiCellModelLearning/src/classicalMultInt.jl $RUNNAME $ARGS \
+date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning CombiCellModelLearning/src/classicalMultInt.jl $ARGS \
 > $OUTPUTPATH/logs/$SLURM_ARRAY_JOB_ID.$RUNNAME.$SLURM_ARRAY_TASK_ID.log 2>&1 ; date
 
 # After job completes, move the logs
