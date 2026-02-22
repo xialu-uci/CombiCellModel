@@ -4,7 +4,7 @@
 # lines that start with "#SBATCH" are special directives for Slurm
 # other lines that start with "#" are comments
 
-#SBATCH --job-name=combicell_sim_multInt  ## job name
+#SBATCH --job-name=combicell_parTests  ## job name
 #SBATCH -A stilese
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
@@ -48,6 +48,8 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 SOURCEPATH=/pub/stilese/2026/CombiCellModel # don't think i need this for this run
 OUTPUTPATH=../CombiCellLocal/experiments/0220_realData_testParallel1
 
+RUNNAME=combicell_parTests${SLURM_ARRAY_TASK_ID}
+
 
 echo "Test1: does parallelized classicalMultInt.jl run on hpc3?"
 
@@ -63,8 +65,12 @@ echo "=== End precompilation check ==="
 INPUT=$SOURCEPATH/scripts/144args.txt
 ARGS=$(awk "NR==$SLURM_ARRAY_TASK_ID" $INPUT)
 
+echo "Arguments: $ARGS"
+
+
 echo "Running classicalMultInt"
-date; /usr/bin/time -v stdbuf -oL julia --project=CombiCellModelLearning CombiCellModelLearning/src/classicalMultInt.jl $ARGS
+date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning CombiCellModelLearning/src/classicalMultInt.jl $RUNNAME $ARGS \
+> $OUTPUTPATH/logs/$SLURM_ARRAY_JOB_ID.$RUNNAME.$SLURM_ARRAY_TASK_ID.log 2>&1 ; date
 
 # After job completes, move the logs
 logdate=$(date +%y%m%d)
