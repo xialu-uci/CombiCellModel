@@ -9,7 +9,7 @@ struct ModelCombiClassic <: AbstractClassicalModel
     
 end
 
-function make_ModelCombiClassic(;intPoint1 = 11, intPoint2 = 12)
+function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
    # close initial guess 
     p_base_derepresented_ig = ComponentArray(
         fI=0.5,
@@ -77,23 +77,34 @@ function make_ModelCombiClassic(;intPoint1 = 11, intPoint2 = 12)
     )
 
 
-    p_classical_derepresented_ig = ComponentArray(
-        ; p_base_derepresented_ig...,
-        extraCD2 = p_base_derepresented_ig[intPoint1],
-        extraPD1 = p_base_derepresented_ig[intPoint2]
-    )
+    p_classical_derepresented_ig =  if !isnothing(intPoint1) && !isnothing(intPoint2)
+        ComponentArray(; p_base_derepresented_ig...,
+            extraCD2 = p_base_derepresented_ig[intPoint1],
+            extraPD1 = p_base_derepresented_ig[intPoint2])
+    else
+        ComponentArray(; p_base_derepresented_ig...)
+    end
+    
 
-    p_derepresented_lowerbounds = ComponentArray(
+    p_derepresented_lowerbounds = if !isnothing(intPoint1) && !isnothing(intPoint2)
+         ComponentArray(
         ; p_base_derepresented_lowerbounds...,
         extraCD2 = p_base_derepresented_lowerbounds[intPoint1],
         extraPD1 = p_base_derepresented_lowerbounds[intPoint2]
-    )
+        )
+    else
+        ComponentArray(; p_base_derepresented_lowerbounds...)
+    end
 
-     p_derepresented_upperbounds = ComponentArray(
+     p_derepresented_upperbounds = if !isnothing(intPoint1) && !isnothing(intPoint2)
+        ComponentArray(
         ; p_base_derepresented_upperbounds...,
         extraCD2 = p_base_derepresented_upperbounds[intPoint1],
         extraPD1 = p_base_derepresented_upperbounds[intPoint2]
-    )
+        )
+    else 
+        ComponentArray(; p_base_derepresented_upperbounds...)
+    end
 
      intPoints = ComponentArray(
         intPoint1 = intPoint1,
@@ -210,7 +221,7 @@ end
 
 function represent_on_type(p_derepresented, intPoints, model_by_type::Type{ModelCombiClassic})
     # initial transformations, subject to change
-    return ComponentArray(
+    base = ComponentArray(
         fI=log(p_derepresented.fI),  # log
         alpha=log(p_derepresented.alpha),
         tT=log(p_derepresented.tT),
@@ -224,13 +235,20 @@ function represent_on_type(p_derepresented, intPoints, model_by_type::Type{Model
         XO1=log(p_derepresented.XO1),
         O1max=log(p_derepresented.O1max),  # log
         O2max=log(p_derepresented.O2max),
-        extraCD2 = transform(p_derepresented.extraCD2, intPoints[1]), # log for now but what if it has to be sqrt ??
-        extraPD1 = transform(p_derepresented.extraPD1, intPoints[2]) # log for now but what if it has to sqrt??
     )
+    if haskey(p_derepresented, :extraCD2)
+        return ComponentArray(; base...,
+        extraCD2 = transform(p_derepresented.extraCD2, intPoints[1]),
+        extraPD1 = transform(p_derepresented.extraPD1, intPoints[2]))
+    
+    else
+        return base
+    end
+    
 end
 
 function derepresent(p_repr, intPoints, model::ModelCombiClassic)
-    return ComponentArray(
+    base = ComponentArray(
         fI=exp(p_repr.fI),  # TODO: rerun bicycle.jl given fix
         alpha=exp(p_repr.alpha),
         tT=exp(p_repr.tT),
@@ -244,7 +262,13 @@ function derepresent(p_repr, intPoints, model::ModelCombiClassic)
         XO1=exp(p_repr.XO1),
         O1max=exp(p_repr.O1max),  
         O2max=exp(p_repr.O2max),
+    )
+    if haskey(p_repr, :extraCD2)
+        return ComponentArray(; base...,
         extraCD2 = invTransform(p_repr.extraCD2, intPoints[1]), # log for now but what if it has to be sqrt ??
         extraPD1 = invTransform(p_repr.extraPD1, intPoints[2])
     )
+    else
+        return base 
+    end
 end
