@@ -209,7 +209,7 @@ function plot_residuals(dataTrue, fitData, savedir)
         
             # Extract data and fit
             data = dataTrue[output_name][valid_kD_idx]
-            fit = dataTrue[output_name][valid_kD_idx]
+            fit = fitData[output_name][valid_kD_idx]
             x_subset = x_data[valid_kD_idx]
         
             # Calculate residuals
