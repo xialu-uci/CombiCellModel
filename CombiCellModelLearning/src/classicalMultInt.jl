@@ -19,7 +19,7 @@ realLength = length(data["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "02222026_realData_simultaneous"
+exp = "02222026_fakeData_simultaneous"
 #for i in 1:12
  #   for j in 1:12
 i = parse(Int, ARGS[1])
@@ -36,11 +36,11 @@ j = parse(Int, ARGS[2])
           p_repr_ig = deepcopy(model.params_repr_ig)
           # learning problem
           learning_problem = CombiCellModelLearning.LearningProblem(
-               data =data, # fakeData or data (real)
+               data =fakeData, # fakeData or data (real)
                model= model,
                p_repr_lb=CombiCellModelLearning.represent(model.p_derepresented_lowerbounds, model.intPoints, model),
                p_repr_ub=CombiCellModelLearning.represent(model.p_derepresented_upperbounds, model.intPoints, model),
-               mask = trues(realLength), # or fakeLength # no mask for now
+               mask = trues(fakeLength), # or fakeLength # no mask for now
                loss_strategy="normalized")
 
 
