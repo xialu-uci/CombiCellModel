@@ -26,7 +26,7 @@ i = parse(Int, ARGS[1])
 j = parse(Int, ARGS[2])
  # println(i,j)
  # exit
-          dirName = "cd2" * "-"* intPoints[i] * "-" * "pd1"* intPoints[j]
+          dirName = "cd2" * "-"* intPoints[i] * "-" * "pd1"* "-"* intPoints[j]
           savedir = mkdir("../CombiCellLocal/experiments/" * exp * "/" * dirName)
           model = CombiCellModelLearning.make_ModelCombiClassic(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
 

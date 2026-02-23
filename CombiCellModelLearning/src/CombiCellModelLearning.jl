@@ -11,6 +11,8 @@ using ComponentArrays
 using OrdinaryDiffEq
 
 using Makie
+using ColorTypes
+
 
 using Parameters
 using Optimization

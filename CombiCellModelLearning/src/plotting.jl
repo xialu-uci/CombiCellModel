@@ -1,5 +1,4 @@
-
-
+using ColorTypes
 function generate_fit_data(fakeData, p_class, model)
     """
     Generates model predictions for all outputs using fitted parameters.
@@ -72,174 +71,87 @@ end
 # 2. Plot fit vs data using Makie - with separate figures for each kD
 function plot_fit_vs_data(dataTrue, fitData, savedir)
     """
-    Creates 3 sets of plots comparing fitted model predictions to simulated data,
-    one set for each unique kD value.
+    Creates a single figure with 4x2 subplots comparing fitted model predictions to data,
+    overlaying all kD values using color families (data=circles, fit=lines, color=kD value).
     """
     x_data = dataTrue["x"]
     kD_data = dataTrue["KD"]
     output_names = ["O1_00", "O2_00", "O1_10", "O2_10", "O1_01", "O2_01", "O1_11", "O2_11"]
-    
-    # Get unique kD values and their indices
-    unique_kDs = unique(kD_data)
-    println("Found $(length(unique_kDs)) unique kD values: $unique_kDs")
 
-    # Filter out zero values from x_data for log scale
-    valid_global_idx = x_data .> 0
-    x_nonzero = x_data[valid_global_idx]
-    println("\nGlobal x range (non-zero): $(minimum(x_nonzero)) to $(maximum(x_nonzero))")
-    println("log10(x) range: $(log10(minimum(x_nonzero))) to $(log10(maximum(x_nonzero)))")
-    
-    
-    # Create a figure for each unique kD
-    figures = []
-    
-    for (kD_idx, kD_value) in enumerate(unique_kDs)
-        # Find indices for this kD value
-        kD_indices = findall(kD_data .== kD_value)
+    # Get unique kD values
+    unique_kDs = sort(unique(kD_data))
+    n_kDs = length(unique_kDs)
+    println("Found $n_kDs unique kD values: $unique_kDs")
 
-        # Filter indices to only include non-zero x values
-        valid_kD_idx = [i for i in kD_indices if x_data[i] > 0]
-        
-        
-        # Create figure with 4x2 grid for this kD
-        fig = Figure(size=(1400, 1800))
-        
-        for (output_idx, output_name) in enumerate(output_names)
-            # Calculate row and column
-            row = ((output_idx-1) ÷ 2) + 1
-            col = ((output_idx-1) % 2) + 1
-            
-            # Extract data and fit for this kD only
-            data = dataTrue[output_name][valid_kD_idx]
-            fit = fitData[output_name][valid_kD_idx]
-            x_subset = x_data[valid_kD_idx]
-            
-            # Sort by x for smooth line plot (fixes polygons)
+    # Assign a color family per kD — use distinguishable colormap
+    # Each kD gets a base color; data points are lighter, fit lines are darker
+    base_colors = cgrad(:tab10, n_kDs, categorical=true)
+    data_colors = [RGBAf(red(base_colors[k]), green(base_colors[k]), blue(base_colors[k]), 0.5) for k in 1:n_kDs]
+    fit_colors  = [RGBAf(red(base_colors[k]), green(base_colors[k]), blue(base_colors[k]), 1.0) for k in 1:n_kDs]
+
+    # Single figure with 4x2 grid
+    fig = Figure(size=(1400, 1800))
+
+    for (output_idx, output_name) in enumerate(output_names)
+        row = ((output_idx - 1) ÷ 2) + 1
+        col = ((output_idx - 1) % 2) + 1
+
+        ax = Makie.Axis(fig[row, col],
+                  xlabel=(row == 4 ? "x" : ""),
+                  ylabel=output_name,
+                  title=output_name,
+                  xscale=log10)
+        ax.xgridvisible = true
+        ax.ygridvisible = true
+        ax.xminorgridvisible = true
+
+        for (k, kD_value) in enumerate(unique_kDs)
+            # Get indices for this kD with nonzero x
+            kD_indices = findall((kD_data .== kD_value) .& (x_data .> 0))
+
+            x_subset = x_data[kD_indices]
+            data_subset = dataTrue[output_name][kD_indices]
+            fit_subset  = fitData[output_name][kD_indices]
+
+            # Sort by x for smooth lines
             sort_idx = sortperm(x_subset)
-            x_sorted = x_subset[sort_idx]
-            fit_sorted = fit[sort_idx]
-            
-            # Create axis for this subplot
-            ax = Makie.Axis(fig[row, col],
-                      xlabel=(row == 4 ? "x" : ""),
-                      ylabel=output_name,
-                      title="kD = $kD_value: $output_name",
-                      xscale=log10
-                      )  # Using log scale for x 
-            
+            x_sorted   = x_subset[sort_idx]
+            fit_sorted = fit_subset[sort_idx]
+
             # Plot data points
-            scatter!(ax, x_subset, data,
-                     markersize=8,
-                     color=(:steelblue, 0.7),
-                     label="Data",
-                     marker=:diamond)
-            
-            # Plot fitted curve
+            scatter!(ax, x_subset, data_subset,
+                     markersize=7,
+                     color=data_colors[k],
+                     marker=:circle,
+                     label=(output_idx == 1 ? "kD=$kD_value data" : nothing))
+
+            # Plot fit line
             lines!(ax, x_sorted, fit_sorted,
                    linewidth=2.5,
-                   color=:red,
-                   label="Fit")
-            
-            # Add legend to first plot only to save space
-            if output_idx == 1
-                axislegend(ax, position=:lt)
-            end
-            
-            # Add grid
-            ax.xgridvisible = true
-            ax.ygridvisible = true
-            ax.xminorgridvisible = true
+                   color=fit_colors[k],
+                   label=(output_idx == 1 ? "kD=$kD_value fit" : nothing))
         end
-        
-        # Add overall title for this figure
-        Label(fig[0, :], "Model Fit vs Data - kD = $kD_value", 
-              fontsize=20, font=:bold)
-        
-        # Adjust layout
-        colgap!(fig.layout, 20)
-        rowgap!(fig.layout, 20)
-        
-        # Save this figure
-        save_path = joinpath(savedir, "fit_vs_data_kD_$(kD_value).png")
-        save(save_path, fig)
-        println("Saved fit vs data plot for kD = $kD_value to: $save_path")
-        
-        push!(figures, fig)
+
+        # Add legend only to first subplot
+        if output_idx == 1
+            axislegend(ax, position=:lt, framevisible=true, labelsize=10)
+        end
     end
-    
-    
-    return figures
+
+    Label(fig[0, :], "Model Fit vs Data (all kD values)", fontsize=20, font=:bold)
+    colgap!(fig.layout, 20)
+    rowgap!(fig.layout, 20)
+
+    save_path = joinpath(savedir, "fit_vs_data_overlay.png")
+    save(save_path, fig)
+    println("Saved overlaid fit vs data plot to: $save_path")
+
+    return fig
 end
 
 
 
-# # 3. Plot error using Makie
-# function plot_error_all_outputs(fakeData, fitData, savedir)
-#     """
-#     Creates 8 error plots showing absolute differences between data and fit using Makie.
-#     """
-#     x_data = fakeData["x"]
-#     output_names = ["O1_00", "O2_00", "O1_10", "O2_10", "O1_01", "O2_01", "O1_11", "O2_11"]
-    
-#     # Create figure with 4x2 grid
-#     fig = Figure(resolution=(1400, 1800))
-    
-#     for (idx, output_name) in enumerate(output_names)
-#         row = ((idx-1) ÷ 2) + 1
-#         col = ((idx-1) % 2) + 1
-        
-#         # Extract data and fit
-#         data = fakeData[output_name]
-#         fit = fitData[output_name]
-        
-#         # Calculate absolute error
-#         error = abs.(data .- fit)
-#         mean_error = mean(error)
-        
-#         # Create axis
-#         ax = Makie.Axis(fig[row, col],
-#                   xlabel=(row == 4 ? "x" : ""),
-#                   ylabel="|Data - Fit|",
-#                   title="Error: $output_name")
-        
-#         # Plot error points
-#         scatter!(ax, x_data, error,
-#                  markersize=6,
-#                  color=:red,
-#                  label="Absolute Error",
-#                  marker=:diamond)
-        
-#         # Add mean error line
-#         hlines!(ax, [mean_error],
-#                 color=:blue,
-#                 linewidth=2,
-#                 linestyle=:dash,
-#                 label="Mean Error = $(round(mean_error, digits=5))")
-        
-#         # Add legend to first plot only
-#         if idx == 1
-#             axislegend(ax, position=:rt)
-#         end
-        
-#         # Add grid
-#         ax.xgridvisible = true
-#         ax.ygridvisible = true
-#     end
-    
-#     # Add overall title
-#     Label(fig[0, :], "Error Plots (All Outputs)", 
-#           fontsize=20, font=:bold)
-    
-#     # Adjust layout
-#     colgap!(fig.layout, 20)
-#     rowgap!(fig.layout, 20)
-    
-#     save_path = joinpath(savedir, "error_plots_all_outputs_makie.png")
-#     save(save_path, fig)
-#     println("Error plots saved to: $save_path")
-    
-#     return fig
-# end
+
 
 # 4. Plot residuals using Makie
 function plot_residuals(dataTrue, fitData, savedir)
@@ -352,6 +264,8 @@ function compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
     """
     Computes RMSE and bias for each ligand condition (averaging O1 and O2).
     """
+
+
     output_names = ["O1_00", "O2_00", "O1_10", "O2_10", "O1_01", "O2_01", "O1_11", "O2_11"]
     ligand_conds = ["00", "10", "01", "11"]
     metrics_dict = Dict{String, Float64}()
@@ -428,6 +342,32 @@ function compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
     return metrics_dict
 end
 
+function compute_param_ratios(i,j, fitted_params)
+
+#     intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP", "lamdaX", "nC", "XO1", "O1max", "O2max"] # 13 = extraCD2, 14 = extraPD1
+#     string_to_idx = Dict(label => i for (i, label) in enumerate(intPoints))
+#    #  metrics_dict = Dict{String, Float64}()
+
+#     parts = split(folder, "-")
+#         if length(parts) == 4 && parts[1] == "cd2" && parts[3] == "pd1"
+#             i_str = parts[2]
+#             j_str = parts[4]
+
+#             # Check if strings are valid
+#             if haskey(string_to_idx, i_str) && haskey(string_to_idx, j_str)
+#                 i = string_to_idx[i_str]
+#                 j = string_to_idx[j_str]
+#             else
+#                 @warn "Unknown label in folder name: $folder (i_str='$i_str', j_str='$j_str')"
+#             end
+#         end
+
+    cd2_ratio = fitted_params[13]/fitted_params[i]
+    pd1_ratio = fitted_params[14]/fitted_params[j]
+    return cd2_ratio, pd1_ratio
+
+end
+
 # Main function with Makie plots
 function generate_all_plots_and_metrics(dataTrue, fitted_params, loss_history, savedir, model)
     """
@@ -472,7 +412,7 @@ using JLD2, CairoMakie
 
 function create_metrics_heatmaps(base_path::String)
     """
-    Creates 12x12 heatmaps for worst RMSE and worst bias from all model folders.
+    Creates 12x12 heatmaps for worst RMSE, worst bias, cd2 ratio, and pd1 ratio from all model folders.
     
     Args:
         base_path: Path to the parent folder containing all model folders (e.g., "02182026_fakeData")
@@ -495,6 +435,9 @@ function create_metrics_heatmaps(base_path::String)
     # Format: cd2-{i}-pd1-{j}
     rmse_matrix = fill(NaN, 12, 12)
     bias_matrix = fill(NaN, 12, 12)
+    cd2_ratio_matrix = fill(NaN, 12, 12)
+    pd1_ratio_matrix = fill(NaN, 12, 12)
+
     
     # Track which indices we've found
     i_vals = Int[]
@@ -514,10 +457,14 @@ function create_metrics_heatmaps(base_path::String)
                 
                 # Load metrics file
                 metrics_path = joinpath(base_path, folder, "model_metrics_per_condition.jld2")
+                params_path = joinpath(base_path,folder, "final_params_derepr.jld2") 
                 
+
                 if isfile(metrics_path)
                     metrics = load(metrics_path)["metrics_dict"]
-                    
+                    params = load(params_path)["final_params_derepr"]
+                    p_class = params.p_classical
+
                     # Extract worst metrics
                     if haskey(metrics, "Worst_RMSE_all_conds")
                         val = metrics["Worst_RMSE_all_conds"]
@@ -538,6 +485,10 @@ function create_metrics_heatmaps(base_path::String)
                             bias_matrix[i, j] = val
                         end
                     end
+
+                    cd2_ratio, pd1_ratio = compute_param_ratios(i, j, p_class)
+                    cd2_ratio_matrix[i, j] = cd2_ratio
+                    pd1_ratio_matrix[i, j] = pd1_ratio
                     
                     push!(i_vals, i)
                     push!(j_vals, j)
@@ -562,6 +513,10 @@ function create_metrics_heatmaps(base_path::String)
     valid_rmse = filter(!isinf, valid_rmse)
     valid_bias = filter(!isnan, bias_matrix[:])
     valid_bias = filter(!isinf, valid_bias)
+    valid_cd2_ratio = filter(!isnan, cd2_ratio_matrix[:])
+    valid_cd2_ratio = filter(!isinf, valid_cd2_ratio)
+    valid_pd1_ratio = filter(!isnan, pd1_ratio_matrix[:])
+    valid_pd1_ratio = filter(!isinf, valid_pd1_ratio)
     
     if isempty(valid_rmse)
         error("No valid RMSE data found to plot!")
@@ -574,91 +529,105 @@ function create_metrics_heatmaps(base_path::String)
     # Create heatmaps
     figures = Dict{String, Figure}()
     
-    # RMSE Heatmap
-    fig_rmse = Figure(size=(1200, 1000))
-    ax_rmse = Makie.Axis(fig_rmse[1, 1],
-                  title="Worst RMSE Across All Conditions",
-                  xlabel="pd1 parameter",
-                  ylabel="cd2 parameter",
+    # Helper function to set up a standard axis
+    function make_axis(fig, title, xlabel, ylabel)
+        ax = Makie.Axis(fig[1, 1],
+                  title=title,
+                  xlabel=xlabel,
+                  ylabel=ylabel,
                   xticks=(1:12, intPoints),
                   yticks=(1:12, intPoints))
-    
-    # Rotate x-axis labels for better readability
-    ax_rmse.xticklabelrotation = π/4
-    ax_rmse.xticklabelalign = (:right, :center)
-    
+        ax.xticklabelrotation = π/4
+        ax.xticklabelalign = (:right, :center)
+        return ax
+    end
+
+    # Helper to annotate heatmap cells
+    function annotate_cells!(ax, matrix; digits=3)
+        for i in 1:12, j in 1:12
+            if !isnan(matrix[i, j]) && !isinf(matrix[i, j])
+                text!(ax, i, j,
+                      text=string(round(matrix[i, j], digits=digits)),
+                      color=:white,
+                      align=(:center, :center),
+                      fontsize=8,
+                      strokewidth=0.5,
+                      strokecolor=:black)
+            end
+        end
+    end
+
+    # RMSE Heatmap
+    fig_rmse = Figure(size=(1200, 1000))
+    ax_rmse = make_axis(fig_rmse, "Worst RMSE Across All Conditions", "cd2 parameter", "pd1 parameter")
     hm_rmse = heatmap!(ax_rmse, 1:12, 1:12, rmse_matrix,
                        colormap=:viridis,
                        colorrange=(minimum(valid_rmse), maximum(valid_rmse)),
                        nan_color=:lightgray)
-    
-    # Add text annotations for RMSE values
-    for i in 1:12, j in 1:12
-        if !isnan(rmse_matrix[i, j]) && !isinf(rmse_matrix[i, j])
-            text!(ax_rmse, i, j, 
-                  text=string(round(rmse_matrix[i, j], digits=3)),
-                  color=:white,
-                  align=(:center, :center),
-                  fontsize=8,
-                  strokewidth=0.5,
-                  strokecolor=:black)
-        end
-    end
-
+    annotate_cells!(ax_rmse, rmse_matrix)
     Colorbar(fig_rmse[1, 2], hm_rmse, label="RMSE")
     
     # Bias Heatmap
     fig_bias = Figure(size=(1200, 1000))
-    ax_bias = Makie.Axis(fig_bias[1, 1],
-                  title="Worst Bias Across All Conditions",
-                  xlabel="pd1 parameter",
-                  ylabel="cd2 parameter",
-                  xticks=(1:12, intPoints),
-                  yticks=(1:12, intPoints))
-    
-    # Rotate x-axis labels for better readability
-    ax_bias.xticklabelrotation = π/4
-    ax_bias.xticklabelalign = (:right, :center)
-    
+    ax_bias = make_axis(fig_bias, "Worst Bias Across All Conditions", "cd2 parameter", "pd1 parameter")
     hm_bias = heatmap!(ax_bias, 1:12, 1:12, bias_matrix,
                        colormap=:plasma,
                        colorrange=(minimum(valid_bias), maximum(valid_bias)),
                        nan_color=:lightgray)
-    
-    # Add text annotations for bias values
-    for i in 1:12, j in 1:12
-        if !isnan(bias_matrix[i, j]) && !isinf(bias_matrix[i, j])
-            text!(ax_bias, i, j, 
-                  text=string(round(bias_matrix[i, j], digits=3)),
-                  color=:white,
-                  align=(:center, :center),
-                  fontsize=8,
-                  strokewidth=0.5,
-                  strokecolor=:black)
-        end
-    end
-    
+    annotate_cells!(ax_bias, bias_matrix)
     Colorbar(fig_bias[1, 2], hm_bias, label="Bias")
+
+    # CD2 Ratio Heatmap
+    fig_cd2 = Figure(size=(1200, 1000))
+    ax_cd2 = make_axis(fig_cd2, "CD2 Parameter Ratio", "cd2 parameter", "pd1 parameter")
+    hm_cd2 = heatmap!(ax_cd2, 1:12, 1:12, cd2_ratio_matrix,
+                      colormap=:RdBu,
+                      colorrange=isempty(valid_cd2_ratio) ? (0, 1) : (minimum(valid_cd2_ratio), maximum(valid_cd2_ratio)),
+                      nan_color=:lightgray)
+    annotate_cells!(ax_cd2, cd2_ratio_matrix)
+    Colorbar(fig_cd2[1, 2], hm_cd2, label="CD2 Ratio")
+
+    # PD1 Ratio Heatmap
+    fig_pd1 = Figure(size=(1200, 1000))
+    ax_pd1 = make_axis(fig_pd1, "PD1 Parameter Ratio", "cd2 parameter", "pd1 parameter")
+    hm_pd1 = heatmap!(ax_pd1, 1:12, 1:12, pd1_ratio_matrix,
+                      colormap=:RdBu,
+                      colorrange=isempty(valid_pd1_ratio) ? (0, 1) : (minimum(valid_pd1_ratio), maximum(valid_pd1_ratio)),
+                      nan_color=:lightgray)
+    annotate_cells!(ax_pd1, pd1_ratio_matrix)
+    Colorbar(fig_pd1[1, 2], hm_pd1, label="PD1 Ratio")
     
     # Save figures
     save(joinpath(base_path, "rmse_heatmap.png"), fig_rmse)
     save(joinpath(base_path, "bias_heatmap.png"), fig_bias)
+    save(joinpath(base_path, "cd2_ratio_heatmap.png"), fig_cd2)
+    save(joinpath(base_path, "pd1_ratio_heatmap.png"), fig_pd1)
+
     println("\nHeatmaps saved to:")
-    println("  RMSE: $(joinpath(base_path, "rmse_heatmap.png"))")
-    println("  Bias: $(joinpath(base_path, "bias_heatmap.png"))")
+    println("  RMSE:      $(joinpath(base_path, "rmse_heatmap.png"))")
+    println("  Bias:      $(joinpath(base_path, "bias_heatmap.png"))")
+    println("  CD2 Ratio: $(joinpath(base_path, "cd2_ratio_heatmap.png"))")
+    println("  PD1 Ratio: $(joinpath(base_path, "pd1_ratio_heatmap.png"))")
     
     figures["rmse"] = fig_rmse
     figures["bias"] = fig_bias
+    figures["cd2_ratio"] = fig_cd2
+    figures["pd1_ratio"] = fig_pd1
     
     # Print summary statistics
     println("\n" * "="^60)
     println("Summary Statistics:")
     println("="^60)
-    println("RMSE - Min: $(minimum(valid_rmse)), Max: $(maximum(valid_rmse)), Mean: $(mean(valid_rmse))")
-    println("Bias - Min: $(minimum(valid_bias)), Max: $(maximum(valid_bias)), Mean: $(mean(valid_bias))")
+    println("RMSE      - Min: $(minimum(valid_rmse)), Max: $(maximum(valid_rmse)), Mean: $(mean(valid_rmse))")
+    println("Bias      - Min: $(minimum(valid_bias)), Max: $(maximum(valid_bias)), Mean: $(mean(valid_bias))")
+    if !isempty(valid_cd2_ratio)
+        println("CD2 Ratio - Min: $(minimum(valid_cd2_ratio)), Max: $(maximum(valid_cd2_ratio)), Mean: $(mean(valid_cd2_ratio))")
+    end
+    if !isempty(valid_pd1_ratio)
+        println("PD1 Ratio - Min: $(minimum(valid_pd1_ratio)), Max: $(maximum(valid_pd1_ratio)), Mean: $(mean(valid_pd1_ratio))")
+    end
     println("\nCells with valid RMSE: $(length(valid_rmse))/144")
     println("Cells with valid Bias: $(length(valid_bias))/144")
     
-    return figures, rmse_matrix, bias_matrix
+    return figures, rmse_matrix, bias_matrix, cd2_ratio_matrix, pd1_ratio_matrix
 end
-

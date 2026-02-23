@@ -51,6 +51,9 @@ OUTPUTPATH=../CombiCellLocal/experiments/02222026_realData_simultaneous
 RUNNAME=combicell_parTests${SLURM_ARRAY_TASK_ID}
 
 
+cd $SOURCEPATH
+
+
 echo "Test1: does parallelized classicalMultInt.jl run on hpc3?"
 
 # Test if Model8 loads without recompilation (should be <5 seconds if precompiled)
