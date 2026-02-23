@@ -12,9 +12,10 @@ loaddir = "./cleanData" # modified for hpc
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData" # change for diff exp
 # savedir = "../CombiCellLocal/experiments/02172026_bicycleHardAccessory_int79_fakeData" # change for diff exp
 parentdir = "../CombiCellLocal/experiments/02222026_realData_simultaneous"
-subdirs = filter(d -> !endswith(d, "logs"), readdir(parentdir, join=true))
+subdirs = filter(d -> isdir(d) && !endswith(d, "logs"), readdir(parentdir, join=true))
 for savedir in subdirs
-
+    # local final_params_derepr, loss_history, model
+    println("Processing: $savedir")
     @load joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
     @load joinpath(savedir, "loss_history.jld2") loss_history
     @load joinpath(savedir, "model.jld2") model

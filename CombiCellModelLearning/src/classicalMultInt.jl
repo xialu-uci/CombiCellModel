@@ -24,6 +24,9 @@ exp = "02222026_realData_simultaneous"
  #   for j in 1:12
 i = parse(Int, ARGS[1])
 j = parse(Int, ARGS[2])
+#i = 1
+# j = 1
+
  # println(i,j)
  # exit
           dirName = "cd2" * "-"* intPoints[i] * "-" * "pd1"* "-"* intPoints[j]

@@ -92,6 +92,9 @@ function plot_fit_vs_data(dataTrue, fitData, savedir)
     # Single figure with 4x2 grid
     fig = Figure(size=(1400, 1800))
 
+    # set up to link axes
+    axes_list = Makie.Axis[]
+
     for (output_idx, output_name) in enumerate(output_names)
         row = ((output_idx - 1) ÷ 2) + 1
         col = ((output_idx - 1) % 2) + 1
@@ -104,6 +107,8 @@ function plot_fit_vs_data(dataTrue, fitData, savedir)
         ax.xgridvisible = true
         ax.ygridvisible = true
         ax.xminorgridvisible = true
+
+        push!(axes_list, ax)
 
         for (k, kD_value) in enumerate(unique_kDs)
             # Get indices for this kD with nonzero x
@@ -131,12 +136,18 @@ function plot_fit_vs_data(dataTrue, fitData, savedir)
                    color=fit_colors[k],
                    label=(output_idx == 1 ? "kD=$kD_value fit" : nothing))
         end
-
+        
         # Add legend only to first subplot
         if output_idx == 1
             axislegend(ax, position=:lt, framevisible=true, labelsize=10)
         end
+
+
     end
+
+     # link axes 
+    linkxaxes!(axes_list...)
+    linkyaxes!(axes_list...)
 
     Label(fig[0, :], "Model Fit vs Data (all kD values)", fontsize=20, font=:bold)
     colgap!(fig.layout, 20)
