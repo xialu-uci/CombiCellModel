@@ -11,7 +11,7 @@ loaddir = "./cleanData" # modified for hpc
 
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData" # change for diff exp
 # savedir = "../CombiCellLocal/experiments/02172026_bicycleHardAccessory_int79_fakeData" # change for diff exp
-parentdir = "../CombiCellLocal/experiments/02222026_realData_simultaneous"
+parentdir = "../CombiCellLocal/experiments/02222026_fakeData_simultaneous"
 subdirs = filter(d -> isdir(d) && !endswith(d, "logs"), readdir(parentdir, join=true))
 for savedir in subdirs
     # local final_params_derepr, loss_history, model
@@ -31,7 +31,7 @@ for savedir in subdirs
    #  fitData = CombiCellModelLearning.generate_fit_data(data, p_class, model)
    #  all_metrics = CombiCellModelLearning.compute_metrics_per_ligand_condition(data, fitData, savedir)
     all_metrics, fitData = CombiCellModelLearning.generate_all_plots_and_metrics(
-        data, p_class, loss_history, savedir, model
+        fakeData, p_class, loss_history, savedir, model
     )   # or change to fake data
 end
 
