@@ -145,9 +145,14 @@ function plot_fit_vs_data(dataTrue, fitData, savedir)
 
     end
 
-     # link axes 
-    linkxaxes!(axes_list...)
-    linkyaxes!(axes_list...)
+    axes_col1 = axes_list[1:2:end]  # indices 1,3,5,7 → O1_00, O1_10, O1_01, O1_11
+    axes_col2 = axes_list[2:2:end]  # indices 2,4,6,8 → O2_00, O2_10, O2_01, O2_11
+
+    linkxaxes!(axes_col1...)
+    linkyaxes!(axes_col1...)
+    linkxaxes!(axes_col2...)
+    linkyaxes!(axes_col2...)
+
 
     Label(fig[0, :], "Model Fit vs Data (all kD values)", fontsize=20, font=:bold)
     colgap!(fig.layout, 20)
