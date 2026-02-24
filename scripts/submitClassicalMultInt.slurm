@@ -46,7 +46,7 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel # don't think i need this for this run
-OUTPUTPATH=../CombiCellLocal/experiments/02232026_fakeData_simultaneous
+OUTPUTPATH=../CombiCellLocal/experiments/02242026_realData_simultaneous
 
 RUNNAME=combicell_parTests${SLURM_ARRAY_TASK_ID}
 
