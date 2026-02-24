@@ -20,7 +20,7 @@ for cond in conditions
     )
 end
 
-parentdir = "02232026_nonsimultaneous_realData"
+parentdir = "02242026_nonsimultaneous_realData"
 
 for cond in conditions
     data_subset = subsets[cond]
