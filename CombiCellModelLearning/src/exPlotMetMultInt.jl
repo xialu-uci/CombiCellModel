@@ -11,7 +11,7 @@ loaddir = "./cleanData" # modified for hpc
 
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData" # change for diff exp
 # savedir = "../CombiCellLocal/experiments/02172026_bicycleHardAccessory_int79_fakeData" # change for diff exp
-parentdir = "../CombiCellLocal/experiments/02232026_fakeData_simultaneous"
+parentdir = "../CombiCellLocal/experiments/02242026_realData_simultaneous"
 subdirs = filter(d -> isdir(d) && !endswith(d, "logs"), readdir(parentdir, join=true))
 for savedir in subdirs
     # local final_params_derepr, loss_history, model
