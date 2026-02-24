@@ -5,7 +5,7 @@ struct ModelCombiClassic <: AbstractClassicalModel
     u0::Vector{Float64}  # Not used for algebraic model, but kept for compatibility for now...
     params_repr_ig::ComponentArray{Float64} # biophysical parameters mapped to spaces suitable for optimization # log, logit, sqrt transforms
     params_derepresented_ig::ComponentArray{Float64}
-    intPoints::ComponentArray{Int64}
+    intPoints::ComponentArray
     
 end
 
