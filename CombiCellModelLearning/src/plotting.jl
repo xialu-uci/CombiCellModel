@@ -1,11 +1,11 @@
 using ColorTypes
-function generate_fit_data(fakeData, p_class, model)
+function generate_fit_data(data, p_class, model)
     """
     Generates model predictions for all outputs using fitted parameters.
     """
     # Extract input data
-    x_data = fakeData["x"]
-    kD_data = fakeData["KD"]
+    x_data = data["x"]
+    kD_data = data["KD"]
     
     predictions = CombiCellModelLearning.forward_combi(x_data, kD_data, p_class, model)
     
@@ -34,6 +34,8 @@ function generate_fit_data(fakeData, p_class, model)
     
     return fitData
 end
+
+
 
 #  loss w makie
 function plot_loss_history(loss_history, savedir)
@@ -145,14 +147,6 @@ function plot_fit_vs_data(dataTrue, fitData, savedir)
 
     end
 
-    axes_col1 = axes_list[1:2:end]  # indices 1,3,5,7 → O1_00, O1_10, O1_01, O1_11
-    axes_col2 = axes_list[2:2:end]  # indices 2,4,6,8 → O2_00, O2_10, O2_01, O2_11
-
-    linkxaxes!(axes_col1...)
-    linkyaxes!(axes_col1...)
-    linkxaxes!(axes_col2...)
-    linkyaxes!(axes_col2...)
-
 
     Label(fig[0, :], "Model Fit vs Data (all kD values)", fontsize=20, font=:bold)
     colgap!(fig.layout, 20)
@@ -164,7 +158,6 @@ function plot_fit_vs_data(dataTrue, fitData, savedir)
 
     return fig
 end
-
 
 
 
@@ -646,4 +639,176 @@ function create_metrics_heatmaps(base_path::String)
     println("Cells with valid Bias: $(length(valid_bias))/144")
     
     return figures, rmse_matrix, bias_matrix, cd2_ratio_matrix, pd1_ratio_matrix
+end
+
+# for non simultaneous (super inefficient)
+
+function generate_single_fits(data, p_class, model)
+    x_data = data["x"]
+    kD_data = data["KD"]
+    predictions = CombiCellModelLearning.forward_combi(x_data, kD_data, p_class, model)
+
+    fitData = Dict{String, Vector{Float64}}(
+        "x"  => x_data,
+        "KD" => kD_data,
+        "O1" => predictions[:, 1],
+        "O2" => predictions[:, 2]
+    )
+    return fitData
+end
+
+function plot_single_fit(dataTrue, fitData, savedir)
+    x_data = dataTrue["x"]
+    kD_data = dataTrue["KD"]
+    output_names = ["O1", "O2"]
+
+    unique_kDs = sort(unique(kD_data))
+    n_kDs = length(unique_kDs)
+
+    base_colors = cgrad(:tab10, n_kDs, categorical=true)
+    data_colors = [RGBAf(red(base_colors[k]), green(base_colors[k]), blue(base_colors[k]), 0.5) for k in 1:n_kDs]
+    fit_colors  = [RGBAf(red(base_colors[k]), green(base_colors[k]), blue(base_colors[k]), 1.0) for k in 1:n_kDs]
+
+    fig = Figure(size=(1400, 600))
+    axes_list = Makie.Axis[]
+
+    for (output_idx, output_name) in enumerate(output_names)
+        ax = Makie.Axis(fig[1, output_idx],
+                xlabel="x",
+                ylabel=output_name,
+                title=output_name,
+                xscale=log10)
+        ax.xgridvisible = true
+        ax.ygridvisible = true
+        ax.xminorgridvisible = true
+        push!(axes_list, ax)
+
+        for (k, kD_value) in enumerate(unique_kDs)
+            kD_indices = findall((kD_data .== kD_value) .& (x_data .> 0))
+            x_subset   = x_data[kD_indices]
+            data_subset = dataTrue[output_name][kD_indices]
+            fit_subset  = fitData[output_name][kD_indices]
+
+            sort_idx = sortperm(x_subset)
+            scatter!(ax, x_subset, data_subset,
+                     markersize=7, color=data_colors[k], marker=:circle,
+                     label=(output_idx == 1 ? "kD=$kD_value data" : nothing))
+            lines!(ax, x_subset[sort_idx], fit_subset[sort_idx],
+                   linewidth=2.5, color=fit_colors[k],
+                   label=(output_idx == 1 ? "kD=$kD_value fit" : nothing))
+        end
+
+        if output_idx == 1
+            axislegend(ax, position=:lt, framevisible=true, labelsize=10)
+        end
+    end
+
+    linkxaxes!(axes_list...)
+
+    Label(fig[0, :], "Model Fit vs Data", fontsize=20, font=:bold)
+    colgap!(fig.layout, 20)
+
+    save_path = joinpath(savedir, "single_fit_vs_data.png")
+    save(save_path, fig)
+    println("Saved single fit vs data plot to: $save_path")
+    return fig
+end
+
+function plot_single_residuals(dataTrue, fitData, savedir)
+    x_data = dataTrue["x"]
+    kD_data = dataTrue["KD"]
+    output_names = ["O1", "O2"]
+    unique_kDs = unique(kD_data)
+
+    figures = []
+    for (kD_idx, kD_value) in enumerate(unique_kDs)
+        kD_indices = findall(kD_data .== kD_value)
+        valid_kD_idx = [i for i in kD_indices if x_data[i] > 0]
+
+        fig = Figure(size=(1400, 600))
+        for (output_idx, output_name) in enumerate(output_names)
+            data      = dataTrue[output_name][valid_kD_idx]
+            fit       = fitData[output_name][valid_kD_idx]
+            x_subset  = x_data[valid_kD_idx]
+            residuals = data .- fit
+            mean_residual = mean(residuals)
+
+            ax = Makie.Axis(fig[1, output_idx],
+                    xlabel="x",
+                    ylabel="Data - Fit",
+                    title="Residuals: kD = $kD_value: $output_name",
+                    xscale=log10)
+            ax.xgridvisible = true
+            ax.ygridvisible = true
+
+            scatter!(ax, x_subset, residuals,
+                     markersize=6, color=:purple, marker=:diamond, label="Residuals")
+            hlines!(ax, [0.0], color=:black, linewidth=1, linestyle=:dash, label="Zero")
+            hlines!(ax, [mean_residual], color=:red, linewidth=2,
+                    label="Mean = $(round(mean_residual, digits=5))")
+
+            if output_idx == 1
+                axislegend(ax, position=:rt)
+            end
+        end
+
+        Label(fig[0, :], "Residuals - kD = $kD_value", fontsize=20, font=:bold)
+        colgap!(fig.layout, 20)
+
+        save_path = joinpath(savedir, "single_residuals_kD_$(kD_value).png")
+        save(save_path, fig)
+        println("Saved single residuals for kD = $kD_value to: $save_path")
+        push!(figures, fig)
+    end
+    return figures
+end
+
+function compute_metrics_single(dataTrue, fitData, savedir)
+    o1_data = dataTrue["O1"]
+    o2_data = dataTrue["O2"]
+    o1_fit  = fitData["O1"]
+    o2_fit  = fitData["O2"]
+
+    all_data = vcat(o1_data, o2_data)
+    all_fit  = vcat(o1_fit, o2_fit)
+
+    metrics_dict = Dict{String, Float64}(
+        "RMSE_O1"   => sqrt(mean((o1_data .- o1_fit).^2)),
+        "RMSE_O2"   => sqrt(mean((o2_data .- o2_fit).^2)),
+        "RMSE_combined" => sqrt(mean((all_data .- all_fit).^2)),
+        "bias"      => abs(sum(all_fit .> all_data) / length(all_data) - 0.5)
+    )
+
+    metrics_path = joinpath(savedir, "model_metrics_single.jld2")
+    @save metrics_path metrics_dict
+    println("\nMetrics saved to: $metrics_path")
+
+    return metrics_dict
+end
+
+function generate_all_plots_single(dataTrue, fitted_params, loss_history, savedir, model)
+    println("\n" * "="^60)
+    println("Generating Single-Condition Plots")
+    println("="^60)
+
+    println("\n1. Generating model predictions...")
+    fitData = generate_single_fits(dataTrue, fitted_params, model)
+
+    println("\n2. Plotting loss history...")
+    plot_loss_history(loss_history, savedir)
+
+    println("\n3. Plotting fit vs data...")
+    plot_single_fit(dataTrue, fitData, savedir)
+
+    println("\n4. Plotting residuals...")
+    plot_single_residuals(dataTrue, fitData, savedir)
+
+    println("\n5. Computing metrics...")
+    metrics = compute_metrics_single(dataTrue, fitData, savedir)
+
+    println("\n" * "="^60)
+    println("Done!")
+    println("="^60)
+
+    return metrics, fitData
 end
