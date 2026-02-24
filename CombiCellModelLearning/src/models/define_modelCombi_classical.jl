@@ -37,18 +37,18 @@ function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
     # tight bounds around true params
 
     p_base_derepresented_lowerbounds = ComponentArray(
-        fI=0.01, # don't let this be zero lol
+        fI=1e-5, # don't let this be zero lol
         alpha=1e2,
         tT=1.0,
-        g1=0.01,
+        g1=1e-5,
         k_on_2d=1.0,
         kP=0.1,
-        nKP=1.0,
-        lambdaX=0.01,
-        nC=0.1 ,
+        nKP=1e-3,
+        lambdaX=1e-5,
+        nC=0.01 ,
         XO1=0.01,
-        O1max=0.5,
-        O2max=20.0,
+        O1max=0.1,
+        O2max=10.0,
         # extraCD2 = 0.5, # have to change how handling this later
         # extraPD1 = 20.0
     )
