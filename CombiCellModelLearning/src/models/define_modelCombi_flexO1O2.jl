@@ -1,104 +1,171 @@
-struct ModelCombiFlex <: AbstractFlexiModel
+struct ModelCombiFlexi <: AbstractFlexiModel
     p_classical_derepresented_ig::ComponentArray{Float64} # classical parameters
     p_derepresented_lowerbounds::ComponentArray{Float64} # lower bounds for derepresented parameters
     p_derepresented_upperbounds::ComponentArray{Float64} # upper bounds for derepresented parameters
     u0::Vector{Float64}  # Not used for algebraic model, but kept for compatibility for now...
     params_repr_ig::ComponentArray{Float64} # biophysical parameters mapped to spaces suitable for optimization # log, logit, sqrt transforms
     params_derepresented_ig::ComponentArray{Float64}
+    intPoints::ComponentArray
+    
 end
 
-function make_ModelCombi_flexO1O2(; flexi_dofs=5)
-    p_classical_derepresented_ig = ComponentArray(
-        fI=0.6,
-        alpha=2e6,
-        tT=500.0,
-        g1=2.0,
-        k_on_2d=20.0,
-        # kD=30.0, # TODO: this is given, figure out how to get it in here
-        kP=1.3,
-        nKP=3.0,
-        lambdaX=0.1,
-        nC=4.0,
-        XO1=1.0,
-        O1max=0.95,
-        O2max=150.0,
+function make_ModelCombiFlexi(;intPoint1 = nothing, intPoint2 = nothing, flexi_dofs=20)
+   # close initial guess 
+    p_base_derepresented_ig = ComponentArray(
+        fI=0.5,
+        alpha=1.9e6,
+        tT=600,
+        g1=0.8,
+        k_on_2d=14.0, #(12,16)
+        kP=0.5, #(0.3,0.7)
+        nKP=2.0, #(1.5,2.5)
+        lambdaX=0.08, #(0.03,0.1)
+        nC=2.0, #(1.5,2.5)
+        XO1=0.5, #(0.3,0.7)
+        O1max=0.8, #(0.7,1.0)
+        O2max=100.0, #(80,120)
+        # extraCD2 = 0.97,
+        # extraPD1 = 70.0
     )
 
-    p_derepresented_lowerbounds = ComponentArray(
-        fI=0.0,
-        alpha=1e4,
-        tT=1e2,
-        g1=0.1,
-        k_on_2d=1.0,
-        # kD=1.0, # TODO: this is given, figure out how to get it in here
+    # p_extra_derepresented_ig = ComponentArray(
+    #     extraCD2 = 0.97,
+    #     extraPD1 = 70.0
+    # )
+
+
+    # tight bounds around true params
+
+    p_base_derepresented_lowerbounds = ComponentArray(
+        fI=1e-5, # don't let this be zero 
+        alpha=1.0,
+        tT=1e-5,
+        g1=1e-5,
+        k_on_2d=1e-5,
         kP=0.1,
-        nKP=1.0,
-        lambdaX=0.001,
-        nC=1.0,
-        XO1=0.1,
+        nKP=1e-3,
+        lambdaX=1e-5,
+        nC=0.01 ,
+        XO1=0.01,
         O1max=0.1,
-        O2max=1.0,
+        O2max=10.0,
+        # extraCD2 = 0.5, # have to change how handling this later
+        # extraPD1 = 20.0
     )
 
-    p_derepresented_upperbounds = ComponentArray(
-        fI=1.0,
-        alpha=1e8,
-        tT=1e5,
-        g1=10.0,
-        k_on_2d=1e3,
-        # kD=1e3, # TODO: this is given, figure out how to get it in here
-        kP=10.0,
-        nKP=5.0,
-        lambdaX=1.0,
-        nC=10.0,
-        XO1=10.0,
+    # p_extra_derepresented_lowerbounds = ComponentArray(
+    #     extraCD2 = p_classical_derepresented_lowerbounds.O1max,
+    #     extraPD1 = p_classical_derepresented_lowerbounds.O2max
+    # )
+
+
+    p_base_derepresented_upperbounds = ComponentArray(
+        fI= 1.0,
+        alpha=1e9,
+        tT=1000.0,
+        g1=100.0,
+        k_on_2d=100.0,
+        kP=2.0,
+        nKP=4.0,
+        lambdaX=1000.0,
+        nC=5.0,
+        XO1=1.0,
         O1max=1.0,
-        O2max=1e4,
+        O2max=200.0,
+        # extraCD2 = 1.0; # have to change how handling later
+        # extraPD1 = 200.0
     )
 
-    # initial condition - not used
+
+    p_classical_derepresented_ig =  if !isnothing(intPoint1) && !isnothing(intPoint2)
+        ComponentArray(; p_base_derepresented_ig...,
+            extraCD2 = p_base_derepresented_ig[intPoint1],
+            extraPD1 = p_base_derepresented_ig[intPoint2])
+    else
+        ComponentArray(; p_base_derepresented_ig...)
+    end
+    
+
+    p_derepresented_lowerbounds = if !isnothing(intPoint1) && !isnothing(intPoint2)
+         ComponentArray(
+        ; p_base_derepresented_lowerbounds...,
+        extraCD2 = p_base_derepresented_lowerbounds[intPoint1],
+        extraPD1 = p_base_derepresented_lowerbounds[intPoint2]
+        )
+    else
+        ComponentArray(; p_base_derepresented_lowerbounds...)
+    end
+
+     p_derepresented_upperbounds = if !isnothing(intPoint1) && !isnothing(intPoint2)
+        ComponentArray(
+        ; p_base_derepresented_upperbounds...,
+        extraCD2 = p_base_derepresented_upperbounds[intPoint1],
+        extraPD1 = p_base_derepresented_upperbounds[intPoint2]
+        )
+    else 
+        ComponentArray(; p_base_derepresented_upperbounds...)
+    end
+
+     intPoints = ComponentArray(
+        intPoint1 = intPoint1,
+        intPoint2 = intPoint2
+    )
+
+  
     u0 = [0.0]
 
     params_repr_ig = ComponentArray(
-        p_classical=represent_on_type(p_classical_derepresented_ig, ModelCombiFlex),
-        flex1_params=FlexiFunctions.generate_flexi_ig(flexi_dofs),
-        flex2_params=FlexiFunctions.generate_flexi_ig(flexi_dofs),
+        p_classical=represent_on_type(p_classical_derepresented_ig, intPoints, ModelCombiClassic),
+        # flex
+        flex1_params = FlexiFunctions.generate_flexi_ig(flexi_dofs),
+        flex2_params = FlexiFunctions.generate_flexi_ig(flexi_dofs)     
     )
 
     params_derepresented_ig = ComponentArray(
         p_classical=deepcopy(p_classical_derepresented_ig),
-        flex1_params=FlexiFunctions.generate_flexi_ig(flexi_dofs),
-        flex2_params=FlexiFunctions.generate_flexi_ig(flexi_dofs),
+        flex1_params = FlexiFunctions.generate_flexi_ig(flexi_dofs),
+        flex2_params = FlexiFunctions.generate_flexi_ig(flexi_dofs)
+        
+       # p_extra = deepcopy(p_extra_derepresented_ig)
+        # no flex
+        
     )
+    
+    
 
-    return ModelCombiFlex(
+
+    return ModelCombiClassic(
         p_classical_derepresented_ig,
+       # p_extra_derepresented_ig?
         p_derepresented_lowerbounds,
         p_derepresented_upperbounds,
         u0,
         params_repr_ig,
         params_derepresented_ig,
+        intPoints
     )
 end
 
-function fw(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::ModelCombiFlex)
-    fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max = p_derepresented.p_classical
+function fw(x::Vector{Float64}, kD::Vector{Float64}, p_all_derepresented, model::ModelCombiFlexi)
+
+# for no accessory condition p_class is just p_derepresented.p_classical
+    fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max = p_all_derepresented.p_classical
 
     O1 = Float64[]
     O2 = Float64[]
 
-    eval_flex(x, p) = FlexiFunctions.evaluate_decompress(x, view(p, 1:length(p)))
+    # eval_flex(x, p) = FlexiFunctions.evaluate_decompress(x, view(p, 1:length(p)))
 
     for (xi, kDi) in zip(x, kD)
         CT = (1-fI)*(alpha * xi + tT + g1 * kDi / k_on_2d - sqrt((alpha * xi + tT + g1 * kDi / k_on_2d)^2 - 4 * alpha * xi * tT)) / 2
         CN = (1 / (1 + g1 * kDi / kP))^nKP * CT
         X = CN^nC / (lambdaX^nC + CN^nC)
 
-        O1_val = XO1 / (XO1 + X)
+        O1_val = X / (XO1 + X)
         O2_val = X
 
-        O1i = O1max * abs(eval_flex(abs(O1_val), p_derepresented.flex1_params)) 
-        O2i = O2max * abs(eval_flex(abs(O2_val), p_derepresented.flex2_params))
+        O1i = O1max *abs(FlexiFunctions.evaluate_decompress(abs(O1_val), p_all_derepresented.flex1_params)) 
+        O2i = O2max  *abs(FlexiFunctions.evaluate_decompress(abs(O2_val), p_all_derepresented.flex1_params)) 
 
         push!(O1, O1i)
         push!(O2, O2i)
@@ -132,10 +199,23 @@ end
 #     return O1, O2
 
 # end
+function transform(extra, intPoint)
+    if intPoint == 7|| intPoint ==9
+        return sqrt(extra)
+    end
+return log(extra)
+end
 
-function represent_on_type(p_derepresented, model_by_type::Type{ModelCombiFlex})
+function invTransform(extra, intPoint)
+    if intPoint == 7|| intPoint ==9
+        return (extra)^2
+    end
+return exp(extra)
+end
+
+function represent_on_type(p_derepresented, intPoints, model_by_type::Type{ModelCombiClassic})
     # initial transformations, subject to change
-    return ComponentArray(
+    base = ComponentArray(
         fI=log(p_derepresented.fI),  # log
         alpha=log(p_derepresented.alpha),
         tT=log(p_derepresented.tT),
@@ -150,11 +230,20 @@ function represent_on_type(p_derepresented, model_by_type::Type{ModelCombiFlex})
         O1max=log(p_derepresented.O1max),  # log
         O2max=log(p_derepresented.O2max),
     )
+    if haskey(p_derepresented, :extraCD2)
+        return ComponentArray(; base...,
+        extraCD2 = transform(p_derepresented.extraCD2, intPoints[1]),
+        extraPD1 = transform(p_derepresented.extraPD1, intPoints[2]))
+    
+    else
+        return base
+    end
+    
 end
 
-function derepresent(p_repr, model::ModelCombiFlex)
-    return ComponentArray(
-        fI=1 / (1 + exp(-p_repr.fI)),  # sigmoid
+function derepresent(p_repr, intPoints, model::ModelCombiClassic)
+    base = ComponentArray(
+        fI=exp(p_repr.fI),  # TODO: rerun bicycle.jl given fix
         alpha=exp(p_repr.alpha),
         tT=exp(p_repr.tT),
         g1=exp(p_repr.g1),
@@ -165,7 +254,15 @@ function derepresent(p_repr, model::ModelCombiFlex)
         lambdaX=exp(p_repr.lambdaX),
         nC=(p_repr.nC)^2,
         XO1=exp(p_repr.XO1),
-        O1max=1 / (1 + exp(-p_repr.O1max)),  # sigmoid
+        O1max=exp(p_repr.O1max),  
         O2max=exp(p_repr.O2max),
     )
+    if haskey(p_repr, :extraCD2)
+        return ComponentArray(; base...,
+        extraCD2 = invTransform(p_repr.extraCD2, intPoints[1]), # log for now but what if it has to be sqrt ??
+        extraPD1 = invTransform(p_repr.extraPD1, intPoints[2])
+    )
+    else
+        return base 
+    end
 end
