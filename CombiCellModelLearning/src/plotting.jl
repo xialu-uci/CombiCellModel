@@ -589,22 +589,22 @@ function create_metrics_heatmaps(base_path::String)
     # CD2 Ratio Heatmap
     fig_cd2 = Figure(size=(1200, 1000))
     ax_cd2 = make_axis(fig_cd2, "CD2 Parameter Ratio", "cd2 parameter", "pd1 parameter")
-    hm_cd2 = heatmap!(ax_cd2, 1:12, 1:12, cd2_ratio_matrix,
+    hm_cd2 = heatmap!(ax_cd2, 1:12, 1:12, log10.(cd2_ratio_matrix),
                       colormap=:RdBu,
-                      colorrange=isempty(valid_cd2_ratio) ? (0, 1) : (minimum(valid_cd2_ratio), maximum(valid_cd2_ratio)),
+                      colorrange=isempty(valid_cd2_ratio) ? (0, 1) : (log10(minimum(valid_cd2_ratio)), log10(maximum(valid_cd2_ratio))),
                       nan_color=:lightgray)
     annotate_cells!(ax_cd2, cd2_ratio_matrix)
-    Colorbar(fig_cd2[1, 2], hm_cd2, label="CD2 Ratio")
+    Colorbar(fig_cd2[1, 2], hm_cd2, label="Log10 CD2 Ratio")
 
     # PD1 Ratio Heatmap
     fig_pd1 = Figure(size=(1200, 1000))
     ax_pd1 = make_axis(fig_pd1, "PD1 Parameter Ratio", "cd2 parameter", "pd1 parameter")
-    hm_pd1 = heatmap!(ax_pd1, 1:12, 1:12, pd1_ratio_matrix,
+    hm_pd1 = heatmap!(ax_pd1, 1:12, 1:12, log10.(pd1_ratio_matrix),
                       colormap=:RdBu,
-                      colorrange=isempty(valid_pd1_ratio) ? (0, 1) : (minimum(valid_pd1_ratio), maximum(valid_pd1_ratio)),
+                      colorrange=isempty(valid_pd1_ratio) ? (0, 1) : (log10(minimum(valid_pd1_ratio)), log10(maximum(valid_pd1_ratio))),
                       nan_color=:lightgray)
     annotate_cells!(ax_pd1, pd1_ratio_matrix)
-    Colorbar(fig_pd1[1, 2], hm_pd1, label="PD1 Ratio")
+    Colorbar(fig_pd1[1, 2], hm_pd1, label="Log10 PD1 Ratio")
     
     # Save figures
     save(joinpath(base_path, "rmse_heatmap.png"), fig_rmse)

@@ -31,7 +31,7 @@ for savedir in subdirs
    #  fitData = CombiCellModelLearning.generate_fit_data(data, p_class, model)
    #  all_metrics = CombiCellModelLearning.compute_metrics_per_ligand_condition(data, fitData, savedir)
     all_metrics, fitData = CombiCellModelLearning.generate_all_plots_and_metrics(
-        fakeData, p_class, loss_history, savedir, model
+        data, p_class, loss_history, savedir, model
     )   # or change to fake data
 end
 
