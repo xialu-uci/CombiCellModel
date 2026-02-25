@@ -1,13 +1,13 @@
 using JLD2
 
-function sim_data(x, kD, stdevs, params, true_fw)
+function sim_data(x, kD, stdevs, params, true_fw; flexi = false)
     # x is vector of input concentrations
     # kD is vector of dissociation constants
     # stdevs is vector of standard deviations for fake experimental outputs
     # model_fw is function that takes (x, kD, params) and returns predicted outputs
     num_points = length(x)
     # sim_O1_00, sim_O2_00 = true_fw(x, kD, params) # was used for no accessory
-    O1_00, O2_00, O1_10, O2_10, O1_01, O2_01, O1_11, O2_11 = true_fw(x, kD, params)
+    O1_00, O2_00, O1_10, O2_10, O1_01, O2_01, O1_11, O2_11 = true_fw(x, kD, params; flexi)
     outputs = [O1_00, O2_00, O1_10, O2_10, O1_01, O2_01, O1_11, O2_11]
 
     # Add noise to simulate experimental data
@@ -71,9 +71,9 @@ params_for_sim = ComponentArray(
 )
 
 
-# basically copied over from fw() in define_modelCombi_classical.jl
+# basically copied over from original hardcoded fw() in define_modelCombi_classical.jl
 
-function true_fw(x::Vector{Float64}, kD::Vector{Float64}, params)
+function true_fw(x::Vector{Float64}, kD::Vector{Float64}, params; flexi = false)
     # unpack params
     fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max, extraCD2, extraPD1 = params
     # hypothesis = CD2 affects O2max, PD1 affects O1max
@@ -92,7 +92,7 @@ function true_fw(x::Vector{Float64}, kD::Vector{Float64}, params)
         O2max=O2max,
     )
 
-    O1_00, O2_00 = true_fw_inside(x, kD, params_00)
+    O1_00, O2_00 = true_fw_inside(x, kD, params_00; flexi)
 
     params_10 = ComponentArray(
         fI=fI,
@@ -109,7 +109,7 @@ function true_fw(x::Vector{Float64}, kD::Vector{Float64}, params)
         O2max=O2max,
     )
 
-    O1_10, O2_10 = true_fw_inside(x, kD, params_10)
+    O1_10, O2_10 = true_fw_inside(x, kD, params_10; flexi)
 
 
     params_01 = ComponentArray(
@@ -127,7 +127,7 @@ function true_fw(x::Vector{Float64}, kD::Vector{Float64}, params)
         O2max=extraPD1,
     )
 
-    O1_01, O2_01 = true_fw_inside(x, kD, params_01)
+    O1_01, O2_01 = true_fw_inside(x, kD, params_01; flexi)
 
     params_11 = ComponentArray(
         fI=fI,
@@ -144,13 +144,13 @@ function true_fw(x::Vector{Float64}, kD::Vector{Float64}, params)
         O2_max=extraPD1,
     )
     
-    O1_11, O2_11 = true_fw_inside(x, kD, params_11)
+    O1_11, O2_11 = true_fw_inside(x, kD, params_11; flexi)
 
     return O1_00, O2_00,O1_10, O2_10, O1_01, O2_01, O1_11, O2_11
     
     
 end
-function true_fw_inside(x::Vector{Float64}, kD::Vector{Float64}, params)
+function true_fw_inside(x::Vector{Float64}, kD::Vector{Float64}, params; flexi = false)
     # unpack params
     fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max = params
 
@@ -162,9 +162,13 @@ function true_fw_inside(x::Vector{Float64}, kD::Vector{Float64}, params)
         CN = (1 / (1 + g1 * kDi / kP))^nKP * CT
         X = CN^nC / (lambdaX^nC + CN^nC)
 
-        O1_val = X / (XO1 + X)
-        O2_val = X
-
+        if flexi == false
+            O1_val = X / (XO1 + X)
+            O2_val = X
+        else
+            O1_val = (X / (XO1 + X))^2
+            O2_val = X + X^2
+        end
         O1i = O1max * O1_val 
         O2i = O2max * O2_val
 
@@ -174,11 +178,17 @@ function true_fw_inside(x::Vector{Float64}, kD::Vector{Float64}, params)
     return (O1, O2)
 end
 
-fakeData = sim_data(x_for_sim, kD_for_sim, stdevs_for_sim, params_for_sim, true_fw)
+# fakeData = sim_data(x_for_sim, kD_for_sim, stdevs_for_sim, params_for_sim, true_fw)
 
-base_path = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/"
+# base_path = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/"
 
-@save joinpath(base_path, "data/fakeData.jld2") fakeData
+# @save joinpath(base_path, "data/fakeData.jld2") fakeData
+
+simFlexiData = sim_data(x_for_sim, kD_for_sim, stdevs_for_sim, params_for_sim, true_fw; flexi = true)
+
+base_path = "./cleanData"
+
+@save joinpath(base_path, "simFlexiData.jld2") simFlexiData
 
 
 

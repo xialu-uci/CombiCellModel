@@ -127,7 +127,6 @@ function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
         p_classical=represent_on_type(p_classical_derepresented_ig, intPoints, ModelCombiClassic),
         # p_extra = represent_on_type(p_extra_derepresented_ig, ModelCombiClassic)
         # no flex
-        
     )
 
     params_derepresented_ig = ComponentArray(
