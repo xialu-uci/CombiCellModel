@@ -80,7 +80,9 @@ function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
     p_classical_derepresented_ig =  if !isnothing(intPoint1) && !isnothing(intPoint2)
         ComponentArray(; p_base_derepresented_ig...,
             extraCD2 = p_base_derepresented_ig[intPoint1],
-            extraPD1 = p_base_derepresented_ig[intPoint2])
+            extraPD1 = p_base_derepresented_ig[intPoint2],
+            extraBoth = p_base_derepresented_ig[intPoint2]
+        )
     else
         ComponentArray(; p_base_derepresented_ig...)
     end
@@ -90,7 +92,8 @@ function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
          ComponentArray(
         ; p_base_derepresented_lowerbounds...,
         extraCD2 = p_base_derepresented_lowerbounds[intPoint1],
-        extraPD1 = p_base_derepresented_lowerbounds[intPoint2]
+        extraPD1 = p_base_derepresented_lowerbounds[intPoint2],
+        extraBoth = p_base_derepresented_lowerbounds[intPoint2]
         )
     else
         ComponentArray(; p_base_derepresented_lowerbounds...)
@@ -100,7 +103,8 @@ function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
         ComponentArray(
         ; p_base_derepresented_upperbounds...,
         extraCD2 = p_base_derepresented_upperbounds[intPoint1],
-        extraPD1 = p_base_derepresented_upperbounds[intPoint2]
+        extraPD1 = p_base_derepresented_upperbounds[intPoint2],
+        extraBoth = p_base_derepresented_upperbounds[intPoint2]
         )
     else 
         ComponentArray(; p_base_derepresented_upperbounds...)
@@ -238,7 +242,9 @@ function represent_on_type(p_derepresented, intPoints, model_by_type::Type{Model
     if haskey(p_derepresented, :extraCD2)
         return ComponentArray(; base...,
         extraCD2 = transform(p_derepresented.extraCD2, intPoints[1]),
-        extraPD1 = transform(p_derepresented.extraPD1, intPoints[2]))
+        extraPD1 = transform(p_derepresented.extraPD1, intPoints[2]),
+        extraBoth = transform(p_derepresented.extraBoth, intPoints[2]))
+
     
     else
         return base
@@ -265,7 +271,8 @@ function derepresent(p_repr, intPoints, model::ModelCombiClassic)
     if haskey(p_repr, :extraCD2)
         return ComponentArray(; base...,
         extraCD2 = invTransform(p_repr.extraCD2, intPoints[1]), # log for now but what if it has to be sqrt ??
-        extraPD1 = invTransform(p_repr.extraPD1, intPoints[2])
+        extraPD1 = invTransform(p_repr.extraPD1, intPoints[2]),
+        extraBoth = invTransform(p_repr.extraBoth, intPoints[2])
     )
     else
         return base 
