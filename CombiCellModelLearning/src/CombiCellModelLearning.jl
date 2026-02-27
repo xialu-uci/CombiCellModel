@@ -137,7 +137,7 @@ include("define_input_functions.jl")
 # include("models/define_modelF8a.jl")
 # include("models/define_modelF8b.jl")
 include("models/define_modelCombi_classical.jl")
-include("models/define_modelCombi_flexO1O2.jl")
+include("models/define_modelCombi_flexO2.jl")
 
 # Model Factory Registry
 ## -----------------
@@ -198,7 +198,7 @@ end
 
 # Register available models
 function _register_default_models!()
-    register_model!("ModelCombi_flexO2", make_ModelCombi_flexO1O2; supports_flexi_dofs=true, description="CombiCell algebraic model with flexi functions for O2")
+    register_model!("ModelCombi_flexO2", make_ModelCombiFlexi; supports_flexi_dofs=true, description="CombiCell algebraic model with flexi functions for O2")
     register_model!("ModelCombi_classical", make_ModelCombiClassic; description="CombiCell algebraic model with classical functions")
     # register_model!("MyModel8", make_MyModel8; description="DI-IFFL model")
     # register_model!("Model5", make_Model5; description="Linear architecture with production-promotion")
