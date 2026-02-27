@@ -123,8 +123,8 @@ function make_ModelCombiFlexi(;intPoint1 = nothing, intPoint2 = nothing, flexi_d
 
     params_derepresented_ig = ComponentArray(
         p_classical=deepcopy(p_classical_derepresented_ig),
-        flex1_params = FlexiFunctions.generate_flexi_ig(flexi_dofs),
-        flex2_params = FlexiFunctions.generate_flexi_ig(flexi_dofs)
+        flex1_params = FlexiFunctions.generate_flexi_ig(flexi_dofs), # for O2
+        # flex2_params = FlexiFunctions.generate_flexi_ig(flexi_dofs)
         
        # p_extra = deepcopy(p_extra_derepresented_ig)
         # no flex
@@ -134,7 +134,7 @@ function make_ModelCombiFlexi(;intPoint1 = nothing, intPoint2 = nothing, flexi_d
     
 
 
-    return ModelCombiClassic(
+    return ModelCombiFlexi(
         p_classical_derepresented_ig,
        # p_extra_derepresented_ig?
         p_derepresented_lowerbounds,
@@ -164,7 +164,7 @@ function fw(x::Vector{Float64}, kD::Vector{Float64}, p_all_derepresented, model:
         O1_val = X / (XO1 + X)
         O2_val = X
 
-        O1i = O1max *abs(FlexiFunctions.evaluate_decompress(abs(O1_val), p_all_derepresented.flex1_params)) 
+        O1i = O1max * O1_val
         O2i = O2max  *abs(FlexiFunctions.evaluate_decompress(abs(O2_val), p_all_derepresented.flex1_params)) 
 
         push!(O1, O1i)
