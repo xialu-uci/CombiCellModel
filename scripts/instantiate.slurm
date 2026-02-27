@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=combicell_sim_fixedInt_inst  ## job name
+#SBATCH --job-name=combicell-instantiate  ## job name
 #SBATCH -p free              ## use free partition
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
 #SBATCH --mem=16G  # Use all available memory on the node
@@ -32,7 +32,7 @@ julia -e 'println("Julia threads: ", Threads.nthreads()); println("CPU threads v
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel #have to be in parent folder of project 
-OUTPUTPATH=../CombiCellLocal/experiments/02242026_fakeData_simultaneous
+OUTPUTPATH=../CombiCellLocal/experiments/02272026_realData_simultaneous-classical-full
 
 cd $SOURCEPATH
 
