@@ -166,8 +166,8 @@ function true_fw_inside(x::Vector{Float64}, kD::Vector{Float64}, params; flexi =
             O1_val = X / (XO1 + X)
             O2_val = X
         else
-            O1_val = (X / (XO1 + X))^2
-            O2_val = X + X^2
+            O1_val = X / (XO1 + X)
+            O2_val = X + 1/2 *X^2# let's make only O2 flexi for now
         end
         O1i = O1max * O1_val 
         O2i = O2max * O2_val
