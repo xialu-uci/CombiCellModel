@@ -22,10 +22,9 @@ intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "
 exp = "02272026_test_realdata_classical_w_paramCond4"
 #for i in 1:12
  #   for j in 1:12
-# i = parse(Int, ARGS[1])
-# j = parse(Int, ARGS[2])
-i = 1
-j = 2
+i = parse(Int, ARGS[1])
+j = parse(Int, ARGS[2])
+
 
  # println(i,j)
  # exit
