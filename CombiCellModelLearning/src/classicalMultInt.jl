@@ -25,7 +25,7 @@ exp = "02272026_test_realdata_classical_w_paramCond4"
 # i = parse(Int, ARGS[1])
 # j = parse(Int, ARGS[2])
 i = 1
-j = 1
+j = 2
 
  # println(i,j)
  # exit
