@@ -589,19 +589,29 @@ function create_metrics_heatmaps(base_path::String)
     # CD2 Ratio Heatmap
     fig_cd2 = Figure(size=(1200, 1000))
     ax_cd2 = make_axis(fig_cd2, "CD2 Parameter Ratio", "cd2 parameter", "pd1 parameter")
-    hm_cd2 = heatmap!(ax_cd2, 1:12, 1:12, log10.(cd2_ratio_matrix),
-                      colormap=:RdBu,
-                      colorrange=isempty(valid_cd2_ratio) ? (0, 1) : (log10(minimum(valid_cd2_ratio)), log10(maximum(valid_cd2_ratio))),
-                      nan_color=:lightgray)
+
+    log_cd2 = log10.(cd2_ratio_matrix)
+    valid_log_cd2 = filter(isfinite, log_cd2)
+    max_abs_cd2 = isempty(valid_log_cd2) ? 1.0 : maximum(abs, valid_log_cd2)
+
+    hm_cd2 = heatmap!(ax_cd2, 1:12, 1:12, log_cd2,
+                    colormap=:RdBu,
+                    colorrange=(-max_abs_cd2, max_abs_cd2),  # symmetric → 0 = white
+                    nan_color=:lightgray)
     annotate_cells!(ax_cd2, cd2_ratio_matrix)
     Colorbar(fig_cd2[1, 2], hm_cd2, label="Log10 CD2 Ratio")
 
     # PD1 Ratio Heatmap
     fig_pd1 = Figure(size=(1200, 1000))
     ax_pd1 = make_axis(fig_pd1, "PD1 Parameter Ratio", "cd2 parameter", "pd1 parameter")
+
+    log_pd1 = log10.(pd1_ratio_matrix)
+    valid_log_pd1 = filter(isfinite, log_pd1)
+    max_abs_pd1 = isempty(valid_log_pd1) ? 1.0 : maximum(abs, valid_log_pd1)
+
     hm_pd1 = heatmap!(ax_pd1, 1:12, 1:12, log10.(pd1_ratio_matrix),
                       colormap=:RdBu,
-                      colorrange=isempty(valid_pd1_ratio) ? (0, 1) : (log10(minimum(valid_pd1_ratio)), log10(maximum(valid_pd1_ratio))),
+                      colorrange=(-max_abs_pd1, max_abs_pd1),
                       nan_color=:lightgray)
     annotate_cells!(ax_pd1, pd1_ratio_matrix)
     Colorbar(fig_pd1[1, 2], hm_pd1, label="Log10 PD1 Ratio")
