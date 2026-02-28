@@ -18,8 +18,8 @@
 # error and out are default from the first job I ran?
 
 # hpc3 environment
-module load julia-1.12.5
-export JULIA_DEPOT_PATH=/pub/stilese/opt/julia-1.12.5/depot
+module load julia-1.11.6
+export JULIA_DEPOT_PATH=/pub/stilese/opt/julia-1.11.6/depot
 
 # Sync NFS cache and check compiled packages exist
 sync
@@ -60,7 +60,7 @@ echo "Test1: does parallelized classicalMultInt.jl run on hpc3?"
 echo "=== Testing Model8 load (precompilation check) ==="
 echo "Expected: <5 seconds if precompiled, >60 seconds if recompiling"
 date
-/usr/bin/time -v julia +1.11.6 --project=CombiCellModelLearning -e 'using CombiCellModelLearning; println("CombiCellModelLearning loaded successfully")' 2>&1 | grep -E "(User time|Elapsed|Precompiling|CombiCellModelLearning loaded)"
+/usr/bin/time -v julia --project=CombiCellModelLearning -e 'using CombiCellModelLearning; println("CombiCellModelLearning loaded successfully")' 2>&1 | grep -E "(User time|Elapsed|Precompiling|CombiCellModelLearning loaded)"
 date
 echo "=== End precompilation check ==="
 
