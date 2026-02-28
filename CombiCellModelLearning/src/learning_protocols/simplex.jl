@@ -42,7 +42,7 @@ function learn(protocol::SimplexProtocol, learning_problem, p_repr_ig;
     # @show learning_problem.p_repr_lb
     # @show learning_problem.p_repr_ub
 
-    function classical_loss(x, p)
+    function classical_loss(x, p) #obj func for simplex
         p_repr = reconstruct_learning_params_from_array(x, p_repr_ig, learning_problem.model)
         loss = get_loss(p_repr; learning_problem=learning_problem)
         

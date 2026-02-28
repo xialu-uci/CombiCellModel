@@ -34,7 +34,8 @@ learning_problem = CombiCellModelLearning.LearningProblem(
 
 
 
-final_params_derepr, loss_history = CombiCellModelLearning.bbo_learn(learning_problem, p_repr_ig, model.intPoints)
+final_params_repr, loss_history = CombiCellModelLearning.bbo_learn(learning_problem, p_repr_ig, model.intPoints)
+final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, model.intPoints, model)
 
 #savedir = "../tempExp" # change for diff exptrues(length(data["x"]))
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData"

@@ -37,7 +37,8 @@ for cond in conditions
         mask=trues(realLength),
         loss_strategy="normalized")
 
-    final_params_derepr, loss_history = CombiCellModelLearning.bbo_learn_single(learning_problem, p_repr_ig, model.intPoints)
+    final_params_repr, loss_history = CombiCellModelLearning.bbo_learn_single(learning_problem, p_repr_ig, model.intPoints)
+    final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, model.intPoints, model)
 
     @save joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
     @save joinpath(savedir, "loss_history.jld2") loss_history

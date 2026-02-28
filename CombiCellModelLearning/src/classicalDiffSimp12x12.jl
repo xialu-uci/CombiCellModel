@@ -19,12 +19,14 @@ realLength = length(data["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "02272026_realData_simultaneous-classical-full"
+exp = "02282026_test_realData_classical-full+simplex"
 #for i in 1:12
  #   for j in 1:12
-i = parse(Int, ARGS[1])
-j = parse(Int, ARGS[2])
+# i = parse(Int, ARGS[1])
+# j = parse(Int, ARGS[2])
 
+i = 3
+j = 3
 
  # println(i,j)
  # exit
@@ -44,8 +46,13 @@ j = parse(Int, ARGS[2])
 
 
 
-          final_params_repr, loss_history = CombiCellModelLearning.bbo_learn(learning_problem, p_repr_ig, model.intPoints)
-          final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, model.intPoints, model)
+          for_simplex_repr, bbo_loss_history = CombiCellModelLearning.bbo_learn(learning_problem, p_repr_ig, model.intPoints)
+          println("Starting simplex optimization with initial loss: $(bbo_loss_history[end])")
+          #for_simplex_repr = CombiCellModelLearning.represent(for_simplex_derepr, model.intPoints, model)
+          final_params_repr, simplex_loss_history = CombiCellModelLearning.simplex_learn(learning_problem, for_simplex_repr, model.intPoints)
+          loss_history = vcat(bbo_loss_history, simplex_loss_history)final_params_derepr
+          final_params_derepr=CombiCellModelLearning.derepresent_all(final_params_repr, model.intPoints, model)
+
 #savedir = "../tempExp" # change for diff exptrues(length(data["x"]))
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData"
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_fakeData"
@@ -59,7 +66,7 @@ j = parse(Int, ARGS[2])
 
 
 # # Now use the functions after your optimization:base_path
-# println("\n=== Starting Plot Generation ===")
+# println("\n=== Starting Plot Generation ===")02272026_realData_simultaneous-classical-full
 
 # # Generate fit data once
 # p_class = final_params_derepr.p_classical
