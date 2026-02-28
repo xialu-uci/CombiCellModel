@@ -8,7 +8,7 @@
 #SBATCH --ntasks=1 ## (-n) number of tasks to launch (PER ARRAY JOB)
 #SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
 #SBATCH --output=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
-#SBATCH --time=0-00:10:00 # Maximum time.
+#SBATCH --time=0-00:20:00 # Maximum time.
 
 # hpc3 environment
 module load julia-1.11.6
