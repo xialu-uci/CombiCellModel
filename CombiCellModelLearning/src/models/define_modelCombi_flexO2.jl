@@ -199,21 +199,21 @@ end
 #     return O1, O2
 
 # end
-function transform(extra, intPoint)
-    if intPoint == 7|| intPoint ==9
-        return sqrt(extra)
-    end
-return log(extra)
-end
+# function transform(extra, intPoint)
+#     if intPoint == 7|| intPoint ==9
+#         return sqrt(extra)
+#     end
+# return log(extra)
+# end
 
-function invTransform(extra, intPoint)
-    if intPoint == 7|| intPoint ==9
-        return (extra)^2
-    end
-return exp(extra)
-end
+# function invTransform(extra, intPoint)
+#     if intPoint == 7|| intPoint ==9
+#         return (extra)^2
+#     end
+# return exp(extra) # messes with instantiation these are actually globally defined
+# end
 
-function represent_on_type(p_derepresented, intPoints, model_by_type::Type{ModelCombiClassic})
+function represent_on_type(p_derepresented, intPoints, model_by_type::Type{ModelCombiFlexi})
     # initial transformations, subject to change
     base = ComponentArray(
         fI=log(p_derepresented.fI),  # log
@@ -241,7 +241,7 @@ function represent_on_type(p_derepresented, intPoints, model_by_type::Type{Model
     
 end
 
-function derepresent(p_repr, intPoints, model::ModelCombiClassic)
+function derepresent(p_repr, intPoints, model::ModelCombiFlexi)
     base = ComponentArray(
         fI=exp(p_repr.fI),  # TODO: rerun bicycle.jl given fix
         alpha=exp(p_repr.alpha),
