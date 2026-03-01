@@ -11,8 +11,8 @@
 #SBATCH --time=0-00:20:00 # Maximum time.
 
 # hpc3 environment
-module load julia-1.11.6
-export JULIA_DEPOT_PATH=/pub/stilese/opt/julia-1.11.6/depot
+module load julia-1.12.5
+export JULIA_DEPOT_PATH=/pub/stilese/opt/julia-1.12.5/depot
 
 # Debug: Report environment for troubleshooting precompilation issues
 echo "=== Environment Debug Info ==="
@@ -41,7 +41,7 @@ mkdir -p $OUTPUTPATH/logs
 # date; juliaup update; date
 
 echo "Running Julia depot instantiation"
-date; /usr/bin/time -v stdbuf -oL julia --project=CombiCellModelLearning -e 'using Pkg; Pkg.instantiate(); Pkg.precompile(); using CombiCellModelLearning' \
+date; /usr/bin/time -v stdbuf -oL julia +1.11.6--project=CombiCellModelLearning -e 'using Pkg; Pkg.instantiate(); Pkg.precompile(); using CombiCellModelLearning' \
 > $OUTPUTPATH/logs/$SLURM_ARRAY_JOB_ID.instantiate.$SLURM_ARRAY_TASK_ID.log 2>&1 ; date
 
 # Verify compiled cache was created
