@@ -10,7 +10,7 @@ function simplex_learn(learning_problem, p_repr_ig, intPoints)
     classical_params_array = collect(values(copy(p_repr_ig)))
 
     # p
-    p = [1.0, 100.0] # not used in obj_func, honestly I think i could delete this but will leave in for now and see if it changes anything later
+   #  p = [1.0, 100.0] # not used in obj_func, honestly I think i could delete this but will leave in for now and see if it changes anything later
 
     # algo is the optimization algorithm (here bbo)
     # maxiters is maximum iterations
@@ -24,8 +24,8 @@ function simplex_learn(learning_problem, p_repr_ig, intPoints)
     
     prob = Optimization.OptimizationProblem(
         obj_func,
-        classical_params_array,
-        p;
+        classical_params_array;
+        
         lb= learning_problem.p_repr_lb,
         ub=learning_problem.p_repr_ub)
 
@@ -39,9 +39,9 @@ function simplex_learn(learning_problem, p_repr_ig, intPoints)
     sol = solve(prob, opt; callback=callback, maxiters=maxiters, solve_options...)
 
     final_params_repr = CombiCellModelLearning.reconstruct_learning_params_from_array(sol.minimizer, p_repr_ig, learning_problem.model)
-    final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, intPoints, learning_problem.model)
+    #final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, intPoints, learning_problem.model)
 
-    return final_params_derepr, loss_history
+    return final_params_repr, loss_history
 
 
 end
