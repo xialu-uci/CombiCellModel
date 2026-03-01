@@ -41,7 +41,7 @@ mkdir -p $OUTPUTPATH/logs
 # date; juliaup update; date
 
 echo "Running Julia depot instantiation"
-date; /usr/bin/time -v stdbuf -oL julia +1.11.6--project=CombiCellModelLearning -e 'using Pkg; Pkg.instantiate(); Pkg.precompile(); using CombiCellModelLearning' \
+date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning -e 'using Pkg; Pkg.instantiate(); Pkg.precompile(); using CombiCellModelLearning' \
 > $OUTPUTPATH/logs/$SLURM_ARRAY_JOB_ID.instantiate.$SLURM_ARRAY_TASK_ID.log 2>&1 ; date
 
 # Verify compiled cache was created
