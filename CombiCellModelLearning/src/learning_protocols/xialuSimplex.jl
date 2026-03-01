@@ -1,5 +1,5 @@
 
-function simplex_learn(learning_problem, p_repr, intPoints)
+function simplex_learn(learning_problem, p_repr_ig, intPoints)
 
     function obj_func(x, p)
         p_repr = CombiCellModelLearning.reconstruct_learning_params_from_array(x, p_repr_ig,learning_problem.model) # this is where params are updated # the trick is the x is the actual params we want. 
@@ -18,24 +18,9 @@ function simplex_learn(learning_problem, p_repr, intPoints)
     # callback is a function called at each iteration, s.t. optimzation stops if it returns true
     config = CallbackConfig() # just stores info for callback function in fields
 
-    loss_history = Float32[]
-    parameter_history = logging ? [] : nothing # generally not loging
+    # parameter_history = logging ? [] : nothing # generally not loging
     
-    function callback(p, lossval)
-        push!(loss_history, lossval)
-        current_iter = length(loss_history)
-        
-        if callback_config.verbose && current_iter % protocol.print_frequency == 0
-            qdrms = sqrt(lossval / callback_config.constants.qdrms_divisor)
-            println("In simplex, current loss after $current_iter iterations: $lossval, qdrms=$qdrms at $(now())")
-        end
-        
-        if logging
-            push!(parameter_history, deepcopy(p))
-        end
-        
-        return false
-    end
+    callback, loss_history = CombiCellModelLearning.create_standard_callback("simplex", config)
     
     prob = Optimization.OptimizationProblem(
         obj_func,

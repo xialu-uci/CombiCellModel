@@ -8,7 +8,7 @@ loaddir = "./cleanData" # modified for hpc
 
 
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData" # change for diff exp
-savedir ="../CombiCellLocal/experiments/02232026_bicycleHardAccessory_int79_fakeData"
+savedir ="../CombiCellLocal/experiments/02282026_test_realData_classical-full+simplex/cd2-tT-pd1-tT"
 
 @load joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
 @load joinpath(savedir, "loss_history.jld2") loss_history
@@ -23,5 +23,5 @@ p_class = final_params_derepr.p_classical
 
 # Generate all plots and metrics
 all_metrics, fitData = CombiCellModelLearning.generate_all_plots_and_metrics(
-    fakeData, p_class, loss_history, savedir, model
+    data, p_class, loss_history, savedir, model
 ) # or change to fake data

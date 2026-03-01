@@ -50,7 +50,7 @@ j = 3
           println("Starting simplex optimization with initial loss: $(bbo_loss_history[end])")
           #for_simplex_repr = CombiCellModelLearning.represent(for_simplex_derepr, model.intPoints, model)
           final_params_repr, simplex_loss_history = CombiCellModelLearning.simplex_learn(learning_problem, for_simplex_repr, model.intPoints)
-          loss_history = vcat(bbo_loss_history, simplex_loss_history)final_params_derepr
+          loss_history = vcat(bbo_loss_history, simplex_loss_history)
           final_params_derepr=CombiCellModelLearning.derepresent_all(final_params_repr, model.intPoints, model)
 
 #savedir = "../tempExp" # change for diff exptrues(length(data["x"]))
