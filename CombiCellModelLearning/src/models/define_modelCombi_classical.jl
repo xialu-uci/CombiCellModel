@@ -43,7 +43,7 @@ function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
         g1=1e-5,
         k_on_2d=1e-5,
         kP=0.1,
-        nKP=1.0,
+        nKP=1e-3,
         lambdaX=1e-5,
         nC=0.01 ,
         XO1=0.01,
