@@ -8,7 +8,7 @@ loaddir = "./cleanData" # modified for hpc
 
 
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData" # change for diff exp
-savedir ="../CombiCellLocal/experiments/02282026_test_realData_classical-full+simplex/cd2-tT-pd1-tT"
+savedir ="../CombiCellLocal/experiments/03012026_test_realData_classical-full+simplex_flexi-compatible/cd2-tT-pd1-tT"
 
 @load joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
 @load joinpath(savedir, "loss_history.jld2") loss_history

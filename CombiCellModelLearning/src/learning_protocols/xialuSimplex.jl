@@ -7,7 +7,7 @@ function simplex_learn(learning_problem, p_repr_ig, intPoints)
         return CombiCellModelLearning.get_loss(p_repr, intPoints; learning_problem=learning_problem)
     end
     # initial guess params array
-    classical_params_array = collect(values(copy(p_repr_ig)))
+    classical_params_array = collect(values(copy(p_repr_ig.p_classical)))
 
     # p
    #  p = [1.0, 100.0] # not used in obj_func, honestly I think i could delete this but will leave in for now and see if it changes anything later
