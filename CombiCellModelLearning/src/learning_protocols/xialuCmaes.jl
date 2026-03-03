@@ -91,8 +91,7 @@ function cmaes_learn(learning_problem, p_repr_ig, intPoints; upper_bound_multipl
     # Evaluate initial guess
     ig = deepcopy(collect(values(copy((flex_all)))))
     initial_loss = flexi_loss(ig, nothing)
-    # best_loss = initial_loss
-    # best_flexi_params = deepcopy(ig)
+
     loss_history = Float64[]
     config = CallbackConfig() # just stores info for callback function in fields
     function callback(p, lossval)
@@ -101,17 +100,17 @@ function cmaes_learn(learning_problem, p_repr_ig, intPoints; upper_bound_multipl
         
         # Track best solution encountered - use fresh loss evaluation instead of lossval
         if !hasfield(typeof(p), :u)
-            error("WEDNESDAY DEBUGGING: CMA-ES callback parameter missing :u field, type: $(typeof(p))")
+            error("DEBUGGING: CMA-ES callback parameter missing :u field, type: $(typeof(p))")
         end
         
         # # Evaluate fresh loss at current parameters
         fresh_loss = flexi_loss(p.u, nothing)
-        # println("WEDNESDAY DEBUGGING: CMA-ES callback iter $current_iter - lossval=$lossval, fresh_loss=$fresh_loss, param_sum=$(sum(abs.(p.u)))")
+        # println("DEBUGGING: best loss so far: $best_loss, current loss: $fresh_loss at iter $current_iter")
         
         if fresh_loss < best_loss
             best_loss = fresh_loss
             best_flexi_params = deepcopy(p.u)
-            println("New best solution found at iter $current_iter with loss $fresh_loss")
+            println("New best solution found at iter $current_iter with loss $best_loss")
         end
         
         if config.verbose && current_iter % config.print_frequency == 0
@@ -151,7 +150,7 @@ function cmaes_learn(learning_problem, p_repr_ig, intPoints; upper_bound_multipl
     
     
     sol = solve(prob, Evolutionary.CMAES(; cmaes_options...); 
-                callback=callback, maxiters=10) # num iteration fed to here. also track best
+                callback=callback, maxiters=100) # num iteration fed to here. also track best
 
     # Determine which solution to return: initial guess vs best found vs final solution
     final_loss_from_sol = flexi_loss(collect(sol.minimizer), nothing)

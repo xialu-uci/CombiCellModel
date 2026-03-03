@@ -1,4 +1,5 @@
 using ColorTypes
+using CombiCellModelLearning
 function generate_fit_data(data, p_class, model)
     """
     Generates model predictions for all outputs using fitted parameters.
@@ -66,6 +67,38 @@ function plot_loss_history(loss_history, savedir)
     save(save_path, fig)
     println("Loss history plot saved to: $save_path")
     
+    return fig
+end
+
+# plot a flexi function given flexi parameters
+function plot_flexi(flexi_params::AbstractVector{<:Real}, savedir::String; npoints::Int=500)
+    """
+    Generate a figure of the flexifunction defined by `flexi_params`.
+
+    The flexifunction is computed using `FlexiFunctions.evaluate_decompress`
+    on the interval [0,1]. A line plot is created and saved to
+    `savedir/flexi_plot.png`. The figure is returned for further use.
+    """
+
+    # prepare evaluation points
+    xs = range(0.0, 1.0; length=npoints)
+    ys = [FlexiFunctions.evaluate_decompress(x, flexi_params) for x in xs]
+
+    # create figure
+    fig = Figure(size=(800, 400))
+    ax = Makie.Axis(fig[1,1],
+                    xlabel="x",
+                    ylabel="flexi(x)",
+                    title="Flexi function")
+    lines!(ax, xs, ys, color=:blue, linewidth=2)
+    ax.xgridvisible = true
+    ax.ygridvisible = true
+
+    # save and report
+    save_path = joinpath(savedir, "flexi_plot.png")
+    save(save_path, fig)
+    println("Flexi plot saved to: $save_path")
+
     return fig
 end
 

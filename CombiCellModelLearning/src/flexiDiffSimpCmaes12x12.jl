@@ -1,5 +1,14 @@
+# Run from CombiCellModel
+using CombiCellModelLearning
+using ComponentArrays # i feel like I shouldn't need this in here...
+using Optimization
+using OptimizationBBO
+using Statistics
+using JLD2
+# using Makie
+
 loaddir = "./cleanData" # modify for hpc
-@load joinpath(loaddir, "fakeData.jld2") fakeData
+@load joinpath(loaddir, "simFlexiData.jld2") simFlexiData
 @load joinpath(loaddir, "CombiCell_data.jld2") data
 
 # function convert_params(p_repr, flexi_model)
@@ -9,19 +18,19 @@ loaddir = "./cleanData" # modify for hpc
   
 # end
 
-fakeLength = length(fakeData["x"])
+fakeLength = length(simFlexiData["x"])
 realLength = length(data["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "03012026_test_realData_flexiO2"
+exp = "03032026_test_fakeData_flexiO2"
 #for i in 1:12
  #   for j in 1:12
 # i = parse(Int, ARGS[1])
 # j = parse(Int, ARGS[2])
 
-i = 3
-j = 3
+i = 11
+j = 12
 
  # println(i,j)
  # exit
@@ -35,11 +44,11 @@ model_flexi = CombiCellModelLearning.make_ModelCombiFlexi(intPoint1= i, intPoint
 p_repr_ig = deepcopy(model_classical.params_repr_ig)
 # learning problem
 learning_problem_classical = CombiCellModelLearning.LearningProblem(
-    data =data, # fakeData or data (real)
+    data =simFlexiData, # fakeData or data (real)
     model= model_classical,
     p_repr_lb=CombiCellModelLearning.represent(model_classical.p_derepresented_lowerbounds, model_classical.intPoints, model_classical),
     p_repr_ub=CombiCellModelLearning.represent(model_classical.p_derepresented_upperbounds, model_classical.intPoints, model_classical),
-    mask = trues(realLength), # or fakeLength # no mask for now
+    mask = trues(fakeLength), # or fakeLength # no mask for now
     loss_strategy="normalized")
 
 
@@ -54,11 +63,11 @@ println("Starting CMA-ES optimization with initial loss: $(simplex_loss_history[
 
 model_flexi = CombiCellModelLearning.make_ModelCombiFlexi(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
 learning_problem_flexi = CombiCellModelLearning.LearningProblem(
-    data =data, # fakeData or data (real)
+    data =simFlexiData, # fakeData or data (real)
     model= model_flexi,
     p_repr_lb=CombiCellModelLearning.represent(model_flexi.p_derepresented_lowerbounds, model_flexi.intPoints, model_flexi),
     p_repr_ub=CombiCellModelLearning.represent(model_flexi.p_derepresented_upperbounds, model_flexi.intPoints, model_flexi),
-    mask = trues(realLength), # or fakeLength # no mask for now
+    mask = trues(fakeLength), # or fakeLength # no mask for now
     loss_strategy="normalized")
 for_cmaes_repr_flexi = CombiCellModelLearning.convert_params(for_cmaes_repr, model_flexi)
 final_params_repr, cmaes_loss_history = CombiCellModelLearning.cmaes_learn(learning_problem_flexi, for_cmaes_repr_flexi, model_flexi.intPoints; upper_bound_multiplier=10.0)

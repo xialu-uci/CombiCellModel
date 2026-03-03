@@ -110,6 +110,7 @@ function learn(protocol::CMAESProtocol, learning_problem, p_repr_ig;
         
         # # Evaluate fresh loss at current parameters
         fresh_loss = flexi_loss(p.u, nothing)
+        println("DEBUGGING: best loss so far: $best_loss, current loss: $fresh_loss at iter $current_iter")
         # println("WEDNESDAY DEBUGGING: CMA-ES callback iter $current_iter - lossval=$lossval, fresh_loss=$fresh_loss, param_sum=$(sum(abs.(p.u)))")
         
         if fresh_loss < best_loss
