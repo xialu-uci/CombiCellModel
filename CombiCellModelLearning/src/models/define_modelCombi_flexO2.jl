@@ -122,7 +122,7 @@ function make_ModelCombiFlexi(;intPoint1 = nothing, intPoint2 = nothing, flexi_d
         p_classical=represent_on_type(p_classical_derepresented_ig, intPoints, ModelCombiClassic),
         # flex
         flex1_params = FlexiFunctions.generate_flexi_ig(flexi_dofs),
-        flex2_params = FlexiFunctions.generate_flexi_ig(flexi_dofs)     
+        # flex2_params = FlexiFunctions.generate_flexi_ig(flexi_dofs) 
     )
 
     params_derepresented_ig = ComponentArray(
