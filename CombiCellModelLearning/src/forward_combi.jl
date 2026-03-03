@@ -23,12 +23,12 @@ function forward_combi(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented,
 end
 
 function forward_combi(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::ModelCombiFlexi)
-
+    intPoint1, intPoint2 = model.intPoints
+    
      if isnothing(intPoint1) && isnothing(intPoint2)
         return forward_simple(x, kD, p_derepresented, model)
     end
 
-    intPoint1, intPoint2 = model.intPoints
     fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max, extraCD2, extraPD1, extraBoth = p_derepresented.p_classical
     p_class = ComponentArray(
         fI=fI, alpha=alpha, tT=tT, g1=g1, k_on_2d=k_on_2d,

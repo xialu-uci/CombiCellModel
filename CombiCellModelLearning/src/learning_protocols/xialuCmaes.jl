@@ -93,7 +93,7 @@ function cmaes_learn(learning_problem, p_repr_ig, intPoints; upper_bound_multipl
     initial_loss = flexi_loss(ig, nothing)
     # best_loss = initial_loss
     # best_flexi_params = deepcopy(ig)
-    
+    loss_history = Float64[]
     config = CallbackConfig() # just stores info for callback function in fields
     function callback(p, lossval)
         push!(loss_history, lossval)
@@ -115,7 +115,7 @@ function cmaes_learn(learning_problem, p_repr_ig, intPoints; upper_bound_multipl
         end
         
         if config.verbose && current_iter % config.print_frequency == 0
-            qdrms = sqrt(lossval / callback_config.constants.qdrms_divisor)
+            qdrms = sqrt(lossval / config.constants.qdrms_divisor)
             println("In cmaes-on-flexi, iteration $current_iter: loss=$lossval, qdrms=$qdrms at $(now())")
             flush(stdout)
         end
