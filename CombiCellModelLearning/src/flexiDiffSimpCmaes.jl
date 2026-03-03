@@ -50,10 +50,21 @@ println("Starting simplex optimization with initial loss: $(bbo_loss_history[end
 for_cmaes_repr, simplex_loss_history = CombiCellModelLearning.simplex_learn(learning_problem_classical, for_simplex_repr, model_classical.intPoints)
    loss_history_classical = vcat(bbo_loss_history, simplex_loss_history)
    final_params_derepr_classical=CombiCellModelLearning.derepresent_all(for_cmaes_repr, model_classical.intPoints, model_classical)
-# println("Starting CMA-ES optimization with initial loss: $(simplex_loss_history[end])")
-# final_params_repr, cmaes_loss_history = CombiCellModelLearning.cmaes_learn(learning_problem, for_cmaes_repr, model.intPoints; upper_bound_multiplier=10.0)
-# loss_history = vcat(bbo_loss_history, simplex_loss_history, cmaes_loss_history)
-# final_params_derepr=CombiCellModelLearning.derepresent_all(final_params_repr, model.intPoints, model)
+println("Starting CMA-ES optimization with initial loss: $(simplex_loss_history[end])")
+
+model_flexi = CombiCellModelLearning.make_ModelCombiFlexi(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
+learning_problem_flexi = CombiCellModelLearning.LearningProblem(
+    data =data, # fakeData or data (real)
+    model= model_flexi,
+    p_repr_lb=CombiCellModelLearning.represent(model_flexi.p_derepresented_lowerbounds, model_flexi.intPoints, model_flexi),
+    p_repr_ub=CombiCellModelLearning.represent(model_flexi.p_derepresented_upperbounds, model_flexi.intPoints, model_flexi),
+    mask = trues(realLength), # or fakeLength # no mask for now
+    loss_strategy="normalized")
+for_cmaes_repr_flexi = CombiCellModelLearning.convert_params(for_cmaes_repr, model_flexi)
+final_params_repr, cmaes_loss_history = CombiCellModelLearning.cmaes_learn(learning_problem_flexi, for_cmaes_repr_flexi, model_flexi.intPoints; upper_bound_multiplier=10.0)
+loss_history = vcat(bbo_loss_history, simplex_loss_history, cmaes_loss_history)
+final_params_derepr_flexi=CombiCellModelLearning.derepresent_all(final_params_repr, model_flexi.intPoints, model_flexi)
+loss_history_full = vcat(bbo_loss_history, simplex_loss_history, cmaes_loss_history)
 
 #savedir = "../tempExp" # change for diff exptrues(length(data["x"]))
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData"
@@ -62,6 +73,10 @@ for_cmaes_repr, simplex_loss_history = CombiCellModelLearning.simplex_learn(lear
 @save joinpath(classdir, "final_params_derepr.jld2") final_params_derepr_classical
 @save joinpath(classdir, "loss_history.jld2") loss_history_classical
 @save joinpath(classdir, "model.jld2") model_classical
+
+@save joinpath(flexidir, "final_params_derepr.jld2") final_params_derepr_flexi
+@save joinpath(flexidir, "loss_history.jld2") loss_history_full
+@save joinpath(flexidir, "model.jld2") model_flexi
   #  end
 
 # end
