@@ -26,7 +26,7 @@ realLength = length(data["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "03012026_test_realData_flexiO2/classical-100xcmaes"
+exp = "03012026_test_realData_flexiO2/classical-5x-100xcmaes-300000simplex"
 #for i in 1:12
  #   for j in 1:12
 # i = parse(Int, ARGS[1])
@@ -62,7 +62,7 @@ println("Starting simplex optimization with initial loss: $(bbo_loss_history[end
 for_cmaes_repr, simplex_loss_history = CombiCellModelLearning.simplex_learn(learning_problem_classical, for_simplex_repr, model_classical.intPoints)
    loss_history_classical = vcat(bbo_loss_history, simplex_loss_history)
    final_params_derepr_classical=CombiCellModelLearning.derepresent_all(for_cmaes_repr, model_classical.intPoints, model_classical)
-println("Starting CMA-ES optimization with initial loss: $(simplex_loss_history[end])")
+
 
 model_flexi = CombiCellModelLearning.make_ModelCombiFlexi(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
 learning_problem_flexi = CombiCellModelLearning.LearningProblem(
@@ -72,13 +72,18 @@ learning_problem_flexi = CombiCellModelLearning.LearningProblem(
     p_repr_ub=CombiCellModelLearning.represent(model_flexi.p_derepresented_upperbounds, model_flexi.intPoints, model_flexi),
     mask = trues(realLength), # or fakeLength # no mask for now
     loss_strategy="normalized")
-for_cmaes_repr_flexi = CombiCellModelLearning.convert_params(for_cmaes_repr, model_flexi)
-
-final_params_repr, cmaes_loss_history = CombiCellModelLearning.cmaes_learn(learning_problem_flexi, for_cmaes_repr_flexi, model_flexi.intPoints; upper_bound_multiplier=10.0)
-loss_history = vcat(bbo_loss_history, simplex_loss_history, cmaes_loss_history)
-final_params_derepr_flexi=CombiCellModelLearning.derepresent_all(final_params_repr, model_flexi.intPoints, model_flexi)
+p_repr_flexi = CombiCellModelLearning.convert_params(for_cmaes_repr, model_flexi)
 loss_history_flexi = vcat(bbo_loss_history, simplex_loss_history, cmaes_loss_history)
-
+for i =1:5
+  global p_repr_flexi, loss_history_flexi
+  println("Starting CMA-ES optimization with initial loss: $(simplex_loss_history[end])")
+  p_repr_flexi, cmaes_loss_i = CombiCellModelLearning.cmaes_learn(learning_problem_flexi, p_repr_flexi, model_flexi.intPoints; upper_bound_multiplier=10.0)
+  push!(loss_history_flexi, cmaes_loss_i...)
+  p_repr_flexi, simplex_loss_i = CombiCellModelLearning.simplex_learn(learning_problem_flexi, p_repr_flexi, model_flexi.intPoints)
+  push!(loss_history_flexi, simplex_loss_i...)
+end
+final_params_derepr_flexi=CombiCellModelLearning.derepresent_all(p_repr_flexi, model_flexi.intPoints, model_flexi)
+# loss_history_flexi = vcat(bbo_loss_history, simplex_loss_history, cmaes_loss_history)
 #savedir = "../tempExp" # change for diff exptrues(length(data["x"]))
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData"
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_fakeData"

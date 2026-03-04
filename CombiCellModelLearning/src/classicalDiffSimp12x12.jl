@@ -52,6 +52,7 @@ j = 3
           final_params_repr, simplex_loss_history = CombiCellModelLearning.simplex_learn(learning_problem, for_simplex_repr, model.intPoints)
           loss_history = vcat(bbo_loss_history, simplex_loss_history)
           final_params_derepr=CombiCellModelLearning.derepresent_all(final_params_repr, model.intPoints, model)
+          
 
 #savedir = "../tempExp" # change for diff exptrues(length(data["x"]))
 # savedir = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/experiments/02112026_bicycleHardAccessory_realData"
