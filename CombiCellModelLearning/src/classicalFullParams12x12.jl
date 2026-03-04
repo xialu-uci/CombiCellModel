@@ -22,8 +22,10 @@ intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "
 exp = "02272026_realData_simultaneous-classical-full"
 #for i in 1:12
  #   for j in 1:12
-i = parse(Int, ARGS[1])
-j = parse(Int, ARGS[2])
+# i = parse(Int, ARGS[1])
+# j = parse(Int, ARGS[2])
+i = 3
+j = 3
 
 
  # println(i,j)

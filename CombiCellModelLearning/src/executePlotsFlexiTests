@@ -1,0 +1,70 @@
+using Makie
+using CairoMakie
+using JLD2
+
+loaddir = "./cleanData" # modified for hpc
+@load joinpath(loaddir, "simFlexiData.jld2") simFlexiData
+@load joinpath(loaddir, "CombiCell_data.jld2") data
+
+parentdir = "../CombiCellLocal/experiments/03012026_test_realData_flexiO2/classical-100xcmaes" # change for diff exp
+#nddirs = readdir(parentdir)
+
+println("Processing condition: classical")
+classical_dir = joinpath(parentdir, "classical")
+
+subdirs_classical = filter(d -> isdir(d) && !endswith(d, "logs"), readdir(classical_dir, join=true))
+for savedir in subdirs_classical
+    # local final_params_derepr, loss_history, model
+    println("Processing: $savedir")
+    @load joinpath(savedir, "final_params_derepr.jld2") final_params_derepr_classical
+    @load joinpath(savedir, "loss_history.jld2") loss_history_classical
+    @load joinpath(savedir, "model.jld2") model_classical
+
+    # println("\n=== Starting Plot Generation ===")
+
+
+    # Generate fit data once
+    # p_class = final_params_derepr.p_classical
+    # fitData = generate_fit_data(fakeData, p_class, model)
+
+    # Generate all metrics
+#  fitData = CombiCellModelLearning.generate_fit_data(data, p_class, model)
+#  all_metrics = CombiCellModelLearning.compute_metrics_per_ligand_condition(data, fitData, savedir)
+    all_metrics, fitData = CombiCellModelLearning.generate_all_plots_and_metrics(
+        data, final_params_derepr_classical, loss_history_classical, savedir, model_classical
+    )   # or change to fake data
+end
+
+println("Processing condition: flexible")
+flexi_dir = joinpath(parentdir, "flexi")
+
+subdirs_flexible = filter(d -> isdir(d) && !endswith(d, "logs"), readdir(flexi_dir, join=true))
+for savedir in subdirs_flexible
+    # local final_params_derepr, loss_history, model
+    println("Processing: $savedir")
+    @load joinpath(savedir, "final_params_derepr.jld2") final_params_derepr_flexi
+    @load joinpath(savedir, "loss_history.jld2") loss_history_flexi
+    @load joinpath(savedir, "model.jld2") model_flexi
+
+    # println("\n=== Starting Plot Generation ===")
+
+
+    # Generate fit data once
+    # p_class = final_params_derepr.p_classical
+    # fitData = generate_fit_data(fakeData, p_class, model)
+
+    # Generate all metrics
+#  fitData = CombiCellModelLearning.generate_fit_data(data, p_class, model)
+#  all_metrics = CombiCellModelLearning.compute_metrics_per_ligand_condition(data, fitData, savedir)
+    all_metrics, fitData = CombiCellModelLearning.generate_all_plots_and_metrics(
+        data, final_params_derepr_flexi, loss_history_flexi, savedir, model_flexi
+    )   # or change to fake data
+
+    CombiCellModelLearning.plot_flexi(final_params_derepr_flexi.flex1_params, savedir)
+end
+
+
+
+   
+    
+   

@@ -1,6 +1,8 @@
 using ColorTypes
 using CombiCellModelLearning
-function generate_fit_data(data, p_class, model)
+
+#TODO: make this compatible with flexi models
+function generate_fit_data(data, p_class, model) # should take p_derepr 
     """
     Generates model predictions for all outputs using fitted parameters.
     """
