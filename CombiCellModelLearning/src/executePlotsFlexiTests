@@ -6,7 +6,7 @@ loaddir = "./cleanData" # modified for hpc
 @load joinpath(loaddir, "simFlexiData.jld2") simFlexiData
 @load joinpath(loaddir, "CombiCell_data.jld2") data
 
-parentdir = "../CombiCellLocal/experiments/03012026_test_realData_flexiO2/classical-5x-100xcmaes-300000simplex" # change for diff exp
+parentdir = "../CombiCellLocal/experiments/03072026_simFlexiData_flexiO2_tests/sinssquare_sigmahalfpi_100xcmaes_300000xsimplex" # change for diff exp
 #nddirs = readdir(parentdir)
 
 println("Processing condition: classical")

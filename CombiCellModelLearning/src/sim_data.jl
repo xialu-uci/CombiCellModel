@@ -1,4 +1,6 @@
 using JLD2
+using CombiCellModelLearning
+using ComponentArrays
 
 function sim_data(x, kD, stdevs, params, true_fw; flexi = false)
     # x is vector of input concentrations
@@ -167,7 +169,8 @@ function true_fw_inside(x::Vector{Float64}, kD::Vector{Float64}, params; flexi =
             O2_val = X
         else
             O1_val = X / (XO1 + X)
-            O2_val = 1/2* X + 1/2 *X^2# let's make only O2 flexi for now
+            # O2_val = 1/2* X + 1/2 *X^2# let's make only O2 flexi for now
+            O2_val = sinpi(X/2)
         end
         O1i = O1max * O1_val 
         O2i = O2max * O2_val
