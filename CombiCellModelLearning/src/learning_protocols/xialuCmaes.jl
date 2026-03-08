@@ -150,7 +150,7 @@ function cmaes_learn(learning_problem, p_repr_ig, intPoints; upper_bound_multipl
     
     
     sol = solve(prob, Evolutionary.CMAES(; cmaes_options...); 
-                callback=callback, maxiters=100) # num iteration fed to here. also track best
+                callback=callback, maxiters=2000) # num iteration fed to here. also track best
 
     # Determine which solution to return: initial guess vs best found vs final solution
     final_loss_from_sol = flexi_loss(collect(sol.minimizer), nothing)

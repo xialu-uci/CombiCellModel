@@ -27,7 +27,7 @@ dataLength = length(useData["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "03072026_simFlexiData_flexiO2_tests/sinssquare_sigmahalfpi_100xcmaes_300000xsimplex"
+exp = "03072026_simFlexiData_flexiO2_tests/sinssquare_sigmahalfpi_2000xcmaes"
 #for i in 1:12
  #   for j in 1:12
 # i = parse(Int, ARGS[1])
@@ -75,13 +75,13 @@ learning_problem_flexi = CombiCellModelLearning.LearningProblem(
     loss_strategy="normalized")
 p_repr_flexi = CombiCellModelLearning.convert_params(for_cmaes_repr, model_flexi)
 loss_history_flexi = simplex_loss_history # save simplex only in flexi loss history for now
-for i =1:5
+for i =1:1 # for now trying to see if cmaes will converge within 1000 iterations
   global p_repr_flexi, loss_history_flexi
   println("Starting CMA-ES optimization with initial loss: $(simplex_loss_history[end])")
   p_repr_flexi, cmaes_loss_i = CombiCellModelLearning.cmaes_learn(learning_problem_flexi, p_repr_flexi, model_flexi.intPoints; upper_bound_multiplier=10.0)
   push!(loss_history_flexi, cmaes_loss_i...)
-  p_repr_flexi, simplex_loss_i = CombiCellModelLearning.simplex_learn(learning_problem_flexi, p_repr_flexi, model_flexi.intPoints)
-  push!(loss_history_flexi, simplex_loss_i...)
+ # p_repr_flexi, simplex_loss_i = CombiCellModelLearning.simplex_learn(learning_problem_flexi, p_repr_flexi, model_flexi.intPoints)
+  # push!(loss_history_flexi, simplex_loss_i...)
 end
 final_params_derepr_flexi=CombiCellModelLearning.derepresent_all(p_repr_flexi, model_flexi.intPoints, model_flexi)
 # loss_history_flexi = vcat(bbo_loss_history, simplex_loss_history, cmaes_loss_history)
