@@ -55,7 +55,9 @@ function plot_loss_history(loss_history, savedir)
     lines!(ax, 1:length(loss_history), loss_history, 
            linewidth=2, color=:blue, label="Loss")
     
+    ylims!(ax, 10^floor(log10(minimum(loss_history))) * 0.5, nothing)
     # Add legend
+
     axislegend(ax, position=:rt)
     
     # Add grid

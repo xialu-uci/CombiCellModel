@@ -5,8 +5,9 @@ using JLD2
 loaddir = "./cleanData" # modified for hpc
 @load joinpath(loaddir, "simFlexiData.jld2") simFlexiData
 @load joinpath(loaddir, "CombiCell_data.jld2") data
+useData = simFlexiData # change here
 
-parentdir = "../CombiCellLocal/experiments/03072026_simFlexiData_flexiO2_tests/sinssquare_sigmahalfpi_100xcmaes_300000xsimplex" # change for diff exp
+parentdir = "../CombiCellLocal/experiments/03072026_simFlexiData_flexiO2_tests/sinssquare_sigmahalfpi_5x_3000xcmaes_300000xsimplex" # change for diff exp
 #nddirs = readdir(parentdir)
 
 println("Processing condition: classical")
@@ -31,7 +32,7 @@ for savedir in subdirs_classical
 #  fitData = CombiCellModelLearning.generate_fit_data(data, p_class, model)
 #  all_metrics = CombiCellModelLearning.compute_metrics_per_ligand_condition(data, fitData, savedir)
     all_metrics, fitData = CombiCellModelLearning.generate_all_plots_and_metrics(
-        data, final_params_derepr_classical, loss_history_classical, savedir, model_classical
+        useData, final_params_derepr_classical, loss_history_classical, savedir, model_classical
     )   # or change to fake data
 end
 
@@ -57,7 +58,7 @@ for savedir in subdirs_flexible
 #  fitData = CombiCellModelLearning.generate_fit_data(data, p_class, model)
 #  all_metrics = CombiCellModelLearning.compute_metrics_per_ligand_condition(data, fitData, savedir)
     all_metrics, fitData = CombiCellModelLearning.generate_all_plots_and_metrics(
-        data, final_params_derepr_flexi, loss_history_flexi, savedir, model_flexi
+        useData, final_params_derepr_flexi, loss_history_flexi, savedir, model_flexi
     )   # or change to fake data
 
     CombiCellModelLearning.plot_flexi(final_params_derepr_flexi.flex1_params, savedir)
