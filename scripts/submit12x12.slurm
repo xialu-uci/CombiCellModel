@@ -4,16 +4,16 @@
 # lines that start with "#SBATCH" are special directives for Slurm
 # other lines that start with "#" are comments
 
-#SBATCH --job-name=combicell-12x12-classical-full  ## job name
+#SBATCH --job-name=combicell-resub-classical-full  ## job name
 #SBATCH -A jallard_lab     ## account to charge
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
 #SBATCH --mem=16G  # Use all available memory on the node
-#SBATCH --array=1-144 ## number of array tasks # change for parellization
+#SBATCH --array=1-6 ## number of array tasks # change for parellization
 #SBATCH --ntasks=1 ## (-n) number of tasks to launch (PER ARRAY JOB)
 #SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
 #SBATCH --output=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
-#SBATCH --time=0-00:40:00 # Maximum time.
+#SBATCH --time=0-01:00:00 # Maximum time.
 
 # error and out are default from the first job I ran?
 
@@ -65,7 +65,7 @@ date
 echo "=== End precompilation check ==="
 
 # execute script
-INPUT=$SOURCEPATH/scripts/144args.txt
+INPUT=$SOURCEPATH/scripts/6args.txt
 ARGS=$(awk "NR==$SLURM_ARRAY_TASK_ID" $INPUT)
 
 echo "Arguments: $ARGS"
