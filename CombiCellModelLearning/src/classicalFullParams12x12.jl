@@ -19,13 +19,13 @@ realLength = length(data["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "02272026_realData_simultaneous-classical-full"
+exp = "03082026_realData_simultaneous-classical-fullparams" # change for diff exp
 #for i in 1:12
  #   for j in 1:12
-# i = parse(Int, ARGS[1])
-# j = parse(Int, ARGS[2])
-i = 3
-j = 3
+i = parse(Int, ARGS[1])
+j = parse(Int, ARGS[2])
+# i = 3
+# j = 3
 
 
  # println(i,j)

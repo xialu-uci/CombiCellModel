@@ -5,7 +5,7 @@
 # other lines that start with "#" are comments
 
 #SBATCH --job-name=combicell-12x12-classical-full  ## job name
-#SBATCH -A stilese
+ #SBATCH -A jallard_lab     ## account to charge
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
 #SBATCH --mem=16G  # Use all available memory on the node
@@ -46,9 +46,9 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel # don't think i need this for this run
-OUTPUTPATH=../CombiCellLocal/experiments/02272026_realData_simultaneous-classical-full
+OUTPUTPATH=../CombiCellLocal/experiments/03082026_realData_simultaneous-classical-fullparams
 
-RUNNAME=combicell_parTests${SLURM_ARRAY_TASK_ID}
+RUNNAME=combicell-12x12-classical-full${SLURM_ARRAY_TASK_ID}
 
 
 cd $SOURCEPATH
@@ -71,8 +71,8 @@ ARGS=$(awk "NR==$SLURM_ARRAY_TASK_ID" $INPUT)
 echo "Arguments: $ARGS"
 
 
-echo "Running classicalMultInt"
-date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning CombiCellModelLearning/src/classicalMultInt.jl $ARGS \
+echo "Running classicalFullParams12x12"
+date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning CombiCellModelLearning/src/classicalFullParams12x12.jl $ARGS \
 > $OUTPUTPATH/logs/$SLURM_ARRAY_JOB_ID.$RUNNAME.$SLURM_ARRAY_TASK_ID.log 2>&1 ; date
 
 # After job completes, move the logs
