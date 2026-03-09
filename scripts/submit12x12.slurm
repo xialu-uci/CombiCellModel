@@ -5,7 +5,7 @@
 # other lines that start with "#" are comments
 
 #SBATCH --job-name=combicell-12x12-classical-full  ## job name
- #SBATCH -A jallard_lab     ## account to charge
+#SBATCH -A jallard_lab     ## account to charge
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
 #SBATCH --mem=16G  # Use all available memory on the node
