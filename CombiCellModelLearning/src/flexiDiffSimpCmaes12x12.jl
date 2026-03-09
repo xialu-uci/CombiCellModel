@@ -27,7 +27,7 @@ dataLength = length(useData["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "03072026_simFlexiData_flexiO2_tests/sinssquare_sigmahalfpi_5x_3000xcmaes_300000xsimplex" # change for diff exp
+exp = "03072026_simFlexiData_flexiO2_tests/sinssquare_sigmahalfpi_10x_3000xcmaes_300000xsimplex" # change for diff exp
 #for i in 1:12
  #   for j in 1:12
 # i = parse(Int, ARGS[1])
@@ -75,7 +75,7 @@ learning_problem_flexi = CombiCellModelLearning.LearningProblem(
     loss_strategy="normalized")
 p_repr_flexi = CombiCellModelLearning.convert_params(for_cmaes_repr, model_flexi)
 loss_history_flexi = simplex_loss_history # save simplex only in flexi loss history for now
-for i =1:5 
+for i =1:10
   global p_repr_flexi, loss_history_flexi
   println("Starting CMA-ES optimization with initial loss: $(simplex_loss_history[end])")
   p_repr_flexi, cmaes_loss_i = CombiCellModelLearning.cmaes_learn(learning_problem_flexi, p_repr_flexi, model_flexi.intPoints; upper_bound_multiplier=10.0)
