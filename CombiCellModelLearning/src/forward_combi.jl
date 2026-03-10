@@ -49,7 +49,7 @@ function forward_combi(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented,
     return hcat((col for (o1, o2) in results for col in (o1, o2))...)
 end
 
-function forward_simple(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model)
+function forward_simple(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::ModelCombiClassic)
     fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max = p_derepresented
     p_class = ComponentArray(
         fI=fI, alpha=alpha, tT=tT, g1=g1, k_on_2d=k_on_2d,
@@ -57,6 +57,18 @@ function forward_simple(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented
         O1max=O1max, O2max=O2max
     )
     O1, O2 = fw(x, kD, p_class, model)
+    return hcat(O1, O2)
+end
+
+function forward_simple(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::ModelCombiFlexi)
+    fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max = p_derepresented.p_classical
+    p_class = ComponentArray(
+        fI=fI, alpha=alpha, tT=tT, g1=g1, k_on_2d=k_on_2d,
+        kP=kP, nKP=nKP, lambdaX=lambdaX, nC=nC, XO1=XO1,
+        O1max=O1max, O2max=O2max
+    )
+    full_p = ComponentArray(p_classical=p_class, flex1_params=p_derepresented.flex1_params)
+    O1, O2 = fw(x, kD, full_p, model)
     return hcat(O1, O2)
 end
 
