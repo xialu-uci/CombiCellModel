@@ -4,12 +4,12 @@
 # lines that start with "#SBATCH" are special directives for Slurm
 # other lines that start with "#" are comments
 
-#SBATCH --job-name=combicell-flexi-12x12  ## job name
+#SBATCH --job-name=combicell-flexi-resub  ## job name
 #SBATCH -A jallard_lab     ## account to charge
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
 #SBATCH --mem=16G  # Use all available memory on the node
-#SBATCH --array=1-144 ## number of array tasks # change for parellization
+#SBATCH --array=1-38 ## number of array tasks # change for parellization
 #SBATCH --ntasks=1 ## (-n) number of tasks to launch (PER ARRAY JOB)
 #SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
 #SBATCH --output=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
@@ -46,9 +46,9 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel # don't think i need this for this run
-OUTPUTPATH=../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex
+OUTPUTPATH=../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-resub
 
-RUNNAME=combicell-flexi-12x12${SLURM_ARRAY_TASK_ID}
+RUNNAME=combicell-flexi-resub-${SLURM_ARRAY_TASK_ID}
 
 
 cd $SOURCEPATH
@@ -65,7 +65,7 @@ date
 echo "=== End precompilation check ==="
 
 # execute script
-INPUT=$SOURCEPATH/scripts/144args.txt
+INPUT=$SOURCEPATH/scripts/38args.txt
 ARGS=$(awk "NR==$SLURM_ARRAY_TASK_ID" $INPUT)
 
 echo "Arguments: $ARGS"
