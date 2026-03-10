@@ -598,7 +598,7 @@ function create_metrics_heatmaps(base_path::String)
     end
 
     # Helper to annotate heatmap cells
-    function annotate_cells!(ax, matrix; digits=3)
+    function annotate_cells!(ax, matrix; digits=3, textcolor=:black)
         for i in 1:12, j in 1:12
             if !isnan(matrix[i, j]) && !isinf(matrix[i, j])
                 text!(ax, i, j,
@@ -607,7 +607,7 @@ function create_metrics_heatmaps(base_path::String)
                       align=(:center, :center),
                       fontsize=8,
                       strokewidth=0.5,
-                      strokecolor=:black)
+                      strokecolor=textcolor)
             end
         end
     end
@@ -619,7 +619,7 @@ function create_metrics_heatmaps(base_path::String)
                        colormap=:viridis,
                        colorrange=(minimum(valid_rmse), maximum(valid_rmse)),
                        nan_color=:lightgray)
-    annotate_cells!(ax_rmse, rmse_matrix)
+    annotate_cells!(ax_rmse, rmse_matrix; textcolor=:white)
     Colorbar(fig_rmse[1, 2], hm_rmse, label="RMSE")
     
     # Bias Heatmap
@@ -629,7 +629,7 @@ function create_metrics_heatmaps(base_path::String)
                        colormap=:plasma,
                        colorrange=(minimum(valid_bias), maximum(valid_bias)),
                        nan_color=:lightgray)
-    annotate_cells!(ax_bias, bias_matrix)
+    annotate_cells!(ax_bias, bias_matrix; textcolor=:white)
     Colorbar(fig_bias[1, 2], hm_bias, label="Bias")
 
     # CD2 Ratio Heatmap
