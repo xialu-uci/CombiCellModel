@@ -4,16 +4,16 @@
 # lines that start with "#SBATCH" are special directives for Slurm
 # other lines that start with "#" are comments
 
-#SBATCH --job-name=combicell-resub-classical-full  ## job name
+#SBATCH --job-name=combicell-flexi-12x12  ## job name
 #SBATCH -A jallard_lab     ## account to charge
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
 #SBATCH --mem=16G  # Use all available memory on the node
-#SBATCH --array=1-6 ## number of array tasks # change for parellization
+#SBATCH --array=1-144 ## number of array tasks # change for parellization
 #SBATCH --ntasks=1 ## (-n) number of tasks to launch (PER ARRAY JOB)
 #SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
 #SBATCH --output=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
-#SBATCH --time=0-01:00:00 # Maximum time.
+#SBATCH --time=0-02:00:00 # Maximum time. # i expect flex <2 hrs, classical <1 hr, 
 
 # error and out are default from the first job I ran?
 
@@ -48,7 +48,7 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 SOURCEPATH=/pub/stilese/2026/CombiCellModel # don't think i need this for this run
 OUTPUTPATH=../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex
 
-RUNNAME=combicell-12x12-classical-full${SLURM_ARRAY_TASK_ID}
+RUNNAME=combicell-flexi-12x12${SLURM_ARRAY_TASK_ID}
 
 
 cd $SOURCEPATH
@@ -65,14 +65,14 @@ date
 echo "=== End precompilation check ==="
 
 # execute script
-INPUT=$SOURCEPATH/scripts/6args.txt
+INPUT=$SOURCEPATH/scripts/144args.txt
 ARGS=$(awk "NR==$SLURM_ARRAY_TASK_ID" $INPUT)
 
 echo "Arguments: $ARGS"
 
 
-echo "Running classicalFullParams12x12"
-date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning CombiCellModelLearning/src/classicalFullParams12x12.jl $ARGS \
+echo "Running flexiDiffSimpCmaes12x12" # change for flexi or classical
+date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning CombiCellModelLearning/src/flexiDiffSimpCmaes12x12.jl $ARGS \
 > $OUTPUTPATH/logs/$SLURM_ARRAY_JOB_ID.$RUNNAME.$SLURM_ARRAY_TASK_ID.log 2>&1 ; date
 
 # After job completes, move the logs
