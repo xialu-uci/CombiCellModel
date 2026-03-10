@@ -410,7 +410,12 @@ function compute_param_ratios(i,j, fitted_params)
 
     cd2_ratio = fitted_params[13]/fitted_params[i]
     pd1_ratio = fitted_params[14]/fitted_params[j]
-    return cd2_ratio, pd1_ratio
+    if i == j
+        both_ratio = fitted_params[15]/fitted_params[j] 
+    else
+        both_ratio = NaN
+    end
+    return cd2_ratio, pd1_ratio, both_ratio
 
 end
 
@@ -483,6 +488,7 @@ function create_metrics_heatmaps(base_path::String)
     bias_matrix = fill(NaN, 12, 12)
     cd2_ratio_matrix = fill(NaN, 12, 12)
     pd1_ratio_matrix = fill(NaN, 12, 12)
+    both_ratio_matrix = fill(NaN, 12, 12)
 
     
     # Track which indices we've found
@@ -532,10 +538,11 @@ function create_metrics_heatmaps(base_path::String)
                         end
                     end
 
-                    cd2_ratio, pd1_ratio = compute_param_ratios(i, j, p_class)
+                    cd2_ratio, pd1_ratio, both_ratio = compute_param_ratios(i, j, p_class)
                     cd2_ratio_matrix[i, j] = cd2_ratio
                     pd1_ratio_matrix[i, j] = pd1_ratio
-                    
+                    both_ratio_matrix[i, j] = both_ratio
+
                     push!(i_vals, i)
                     push!(j_vals, j)
                 else
@@ -563,6 +570,8 @@ function create_metrics_heatmaps(base_path::String)
     valid_cd2_ratio = filter(!isinf, valid_cd2_ratio)
     valid_pd1_ratio = filter(!isnan, pd1_ratio_matrix[:])
     valid_pd1_ratio = filter(!isinf, valid_pd1_ratio)
+    valid_both_ratio = filter(!isnan, both_ratio_matrix[:])
+    valid_both_ratio = filter(!isinf, valid_both_ratio)
     
     if isempty(valid_rmse)
         error("No valid RMSE data found to plot!")
@@ -625,7 +634,7 @@ function create_metrics_heatmaps(base_path::String)
 
     # CD2 Ratio Heatmap
     fig_cd2 = Figure(size=(1200, 1000))
-    ax_cd2 = make_axis(fig_cd2, "CD2 Parameter Ratio", "cd2 parameter", "pd1 parameter")
+    ax_cd2 = make_axis(fig_cd2, "CD2 Only Parameter Ratio", "cd2 parameter", "pd1 parameter")
 
     log_cd2 = log10.(cd2_ratio_matrix)
     valid_log_cd2 = filter(isfinite, log_cd2)
@@ -640,7 +649,7 @@ function create_metrics_heatmaps(base_path::String)
 
     # PD1 Ratio Heatmap
     fig_pd1 = Figure(size=(1200, 1000))
-    ax_pd1 = make_axis(fig_pd1, "PD1 Parameter Ratio", "cd2 parameter", "pd1 parameter")
+    ax_pd1 = make_axis(fig_pd1, "PD1 Only Parameter Ratio", "cd2 parameter", "pd1 parameter")
 
     log_pd1 = log10.(pd1_ratio_matrix)
     valid_log_pd1 = filter(isfinite, log_pd1)
@@ -652,24 +661,40 @@ function create_metrics_heatmaps(base_path::String)
                       nan_color=:lightgray)
     annotate_cells!(ax_pd1, pd1_ratio_matrix)
     Colorbar(fig_pd1[1, 2], hm_pd1, label="Log10 PD1 Ratio")
+
+    # Both PD1/CD2 Ratio Heatmap
+    fig_both = Figure(size=(1200, 1000))
+    ax_both = make_axis(fig_both, "CD2 and PD1 Parameter Ratios", "cd2 parameter", "pd1 parameter")
+    log_both = log10.(both_ratio_matrix)
+    valid_log_both = filter(isfinite, log_both)
+    max_abs_both = isempty(valid_log_both) ? 1.0 : maximum(abs, valid_log_both)
+    hm_both = heatmap!(ax_both, 1:12, 1:12, log_both,
+                      colormap=:RdBu,
+                      colorrange=(-max_abs_both, max_abs_both),
+                      nan_color=:lightgray)
+    annotate_cells!(ax_both, both_ratio_matrix)
+    Colorbar(fig_both[1, 2], hm_both, label="Log10 Both Ratio (CD2 & PD1)")
     
     # Save figures
     save(joinpath(base_path, "rmse_heatmap.png"), fig_rmse)
     save(joinpath(base_path, "bias_heatmap.png"), fig_bias)
     save(joinpath(base_path, "cd2_ratio_heatmap.png"), fig_cd2)
     save(joinpath(base_path, "pd1_ratio_heatmap.png"), fig_pd1)
+    save(joinpath(base_path, "both_ratio_heatmap.png"), fig_both)
 
     println("\nHeatmaps saved to:")
     println("  RMSE:      $(joinpath(base_path, "rmse_heatmap.png"))")
     println("  Bias:      $(joinpath(base_path, "bias_heatmap.png"))")
     println("  CD2 Ratio: $(joinpath(base_path, "cd2_ratio_heatmap.png"))")
     println("  PD1 Ratio: $(joinpath(base_path, "pd1_ratio_heatmap.png"))")
-    
+    println("  Both Ratio: $(joinpath(base_path, "both_ratio_heatmap.png"))")
+
     figures["rmse"] = fig_rmse
     figures["bias"] = fig_bias
     figures["cd2_ratio"] = fig_cd2
     figures["pd1_ratio"] = fig_pd1
-    
+    figures["both_ratio"] = fig_both
+
     # Print summary statistics
     println("\n" * "="^60)
     println("Summary Statistics:")
@@ -681,6 +706,9 @@ function create_metrics_heatmaps(base_path::String)
     end
     if !isempty(valid_pd1_ratio)
         println("PD1 Ratio - Min: $(minimum(valid_pd1_ratio)), Max: $(maximum(valid_pd1_ratio)), Mean: $(mean(valid_pd1_ratio))")
+    end
+    if !isempty(valid_both_ratio)
+        println("Both Ratio - Min: $(minimum(valid_both_ratio)), Max: $(maximum(valid_both_ratio)), Mean: $(mean(valid_both_ratio))")
     end
     println("\nCells with valid RMSE: $(length(valid_rmse))/144")
     println("Cells with valid Bias: $(length(valid_bias))/144")
