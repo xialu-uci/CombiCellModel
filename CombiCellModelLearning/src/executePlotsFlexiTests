@@ -5,7 +5,7 @@ using JLD2
 loaddir = "./cleanData" # modified for hpc
 @load joinpath(loaddir, "simFlexiData.jld2") simFlexiData
 @load joinpath(loaddir, "CombiCell_data.jld2") data
-useData = simFlexiData # change here
+useData = data # change here
 
 parentdir = "../CombiCellLocal/experiments/03092026_realData_flexiO2_tests/sinssquare_sigmahalfpi_10x_3000xcmaes_300000xsimplex" # change for diff exp
 #nddirs = readdir(parentdir)
