@@ -36,6 +36,8 @@ OUTPUTPATH=../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x
 cd $SOURCEPATH
 
 mkdir -p $OUTPUTPATH/logs
+mkdir -p $OUTPUTPATH/flexi # comment out for classical only
+mkdir -p $OUTPUTPATH/classical #  comment out for clasical only
 
 # echo "Updating julia using juliaup"
 # date; juliaup update; date
