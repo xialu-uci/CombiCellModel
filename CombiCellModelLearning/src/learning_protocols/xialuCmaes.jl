@@ -51,7 +51,7 @@ function compute_adaptive_sigma0(ig; upper_bound_multiplier = 10.0)
 end
 
 # CMA-ES implementation
-function cmaes_learn(learning_problem, p_repr_ig, intPoints; upper_bound_multiplier=10.0)
+function cmaes_learn(learning_problem, p_repr_ig, intPoints; upper_bound_multiplier=10.0, single = false)
     
     # Check if model has flex2_params once for performance
     has_flex2 = haskey(p_repr_ig, :flex2_params)
@@ -80,6 +80,11 @@ function cmaes_learn(learning_problem, p_repr_ig, intPoints; upper_bound_multipl
                 p_classical=p_repr_ig.p_classical,
                 flex1_params=flexi_x_array,
             )
+        end
+        if single # not sure if this works yet
+            return CombiCellModelLearning.get_single_loss(full_params, intPoints; learning_problem=learning_problem)
+        else
+            return CombiCellModelLearning.get_loss(full_params, intPoints; learning_problem=learning_problem)
         end
         return get_loss(full_params, intPoints; learning_problem=learning_problem)
     end
@@ -189,4 +194,5 @@ function cmaes_learn(learning_problem, p_repr_ig, intPoints; upper_bound_multipl
     
     return final_params_repr, loss_history
 end# CMA-ES Learning Protocol Implementation
+
 

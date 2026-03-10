@@ -8,7 +8,7 @@ using JLD2
 # using Makie
 
 #using Random
-#Random.seed!(42)
+# Random.seed!(42)
 
 loaddir = "./cleanData" # modify for hpc
 @load joinpath(loaddir, "simFlexiData.jld2") simFlexiData
@@ -27,7 +27,7 @@ dataLength = length(useData["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex" # change for diff exp
+exp = "03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-resub" # change for diff exp
 #for i in 1:12
  #   for j in 1:12
 i = parse(Int, ARGS[1])
