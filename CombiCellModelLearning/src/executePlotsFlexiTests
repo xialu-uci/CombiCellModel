@@ -66,10 +66,10 @@ end
 
 # heat map classical
 
-CombiCellModelLearning.create_metrics_heatmaps(classical_dir)
+# CombiCellModelLearning.create_metrics_heatmaps(classical_dir)
 
 # heat map flexible
-CombiCellModelLearning.create_metrics_heatmaps(flexi_dir)
+# CombiCellModelLearning.create_metrics_heatmaps(flexi_dir)
 
 
 
