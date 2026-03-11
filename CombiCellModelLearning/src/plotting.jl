@@ -316,6 +316,8 @@ function compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
     ligand_conds = ["00", "10", "01", "11"]
     metrics_dict = Dict{String, Float64}()
     
+    o1_max_00 = maximum(dataTrue["O1_00"])
+    o2_max_00 = maximum(dataTrue["O2_00"])
     # println("Model Metrics (Per Ligand Condition):")
     # println("-"^60)
     
@@ -324,14 +326,18 @@ function compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
     for cond in ligand_conds
         # Get O1 and O2 data for this condition
         o1_data = dataTrue["O1_$cond"]
-        o1_data_normed = o1_data ./ maximum(o1_data) # 
+        # o1_data_normed = o1_data ./ maximum(o1_data) # 
+        o1_data_normed = o1_data ./ o1_max_00 # norm with 00 max to avoid issues with very small values dominating the loss
         o2_data = dataTrue["O2_$cond"]
-        o2_data_normed = o2_data ./ maximum(o2_data)
+        #o2_data_normed = o2_data ./ maximum(o2_data)
+        o2_data_normed = o2_data ./ o2_max_00 # norm with 00 max to avoid issues with very small values dominating the loss
         o1_fit = fitData["O1_$cond"]
-        o1_fit_normed = o1_fit ./ maximum(o1_data)
+        # o1_fit_normed = o1_fit ./ maximum(o1_data)
+        o1_fit_normed = o1_fit ./ o1_max_00 # norm with 00 max to avoid issues with very small values dominating the loss
         o2_fit = fitData["O2_$cond"]
-        o2_fit_normed = o2_fit ./ maximum(o2_data)
-        
+        #o2_fit_normed = o2_fit ./ maximum(o2_data)
+        o2_fit_normed = o2_fit ./ o2_max_00 # norm with 00 max to avoid issues with very small values dominating the loss
+
         # Combine O1 and O2 for condition-level metrics
         all_data = vcat(o1_data, o2_data)
         all_fit = vcat(o1_fit, o2_fit)
