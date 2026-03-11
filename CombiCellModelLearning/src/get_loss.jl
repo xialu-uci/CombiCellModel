@@ -23,11 +23,16 @@ function get_loss(p_repr, intPoints; learning_problem::LearningProblem{M}) where
     # ssr = sum((O1_00_pred .- O1_00).^2) + sum((O2_00_pred .- O2_00).^2)
     if learning_problem.loss_strategy == "vanilla"
         ssr = norm(output_true_matrix - output_pred_matrix) # default p =2 (frobenius)
-    elseif learning_problem.loss_strategy == "normalized"
+    elseif learning_problem.loss_strategy == "normalized-joint"
         joint_mat = vcat(output_pred_matrix, output_true_matrix)
         joint_max = maximum(abs.(joint_mat), dims = 1)
         output_true_normed = output_true_matrix ./ joint_max
         output_pred_normed = output_pred_matrix ./ joint_max
+        ssr = norm(output_true_normed - output_pred_normed);
+    elseif learning_problem.loss_strategy == "normalized" # normalized with true max only, to avoid issues with very small predicted values dominating the loss
+        true_max = maximum(abs.(output_true_matrix), dims = 1)
+        output_true_normed = output_true_matrix ./ true_max
+        output_pred_normed = output_pred_matrix ./ true_max
         ssr = norm(output_true_normed - output_pred_normed);
     end
 
