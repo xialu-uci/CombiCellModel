@@ -4,7 +4,7 @@
 # lines that start with "#SBATCH" are special directives for Slurm
 # other lines that start with "#" are comments
 
-#SBATCH --job-name=combicell-flexi-resub  ## job name
+#SBATCH --job-name=combicell-flexi-trueNormalLoss  ## job name
 #SBATCH -A jallard_lab     ## account to charge
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
@@ -49,7 +49,7 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 SOURCEPATH=/pub/stilese/2026/CombiCellModel # don't think i need this for this run
 OUTPUTPATH=../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-normalized-true-max
 
-RUNNAME=combicell-flexi-resub-${SLURM_ARRAY_TASK_ID}
+RUNNAME=combicell-flexi-trueNormalLoss-${SLURM_ARRAY_TASK_ID}
 
 
 cd $SOURCEPATH
