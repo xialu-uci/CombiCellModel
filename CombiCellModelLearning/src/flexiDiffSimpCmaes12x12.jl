@@ -28,7 +28,7 @@ dataLength = length(useData["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-DEBUG/normalized-00-max/3models-data-zeromin" # change for diff exp
+exp = "03112026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-normalized-00-min0" # change for diff exp
 #for i in 1:12
  #   for j in 1:12
 i = parse(Int, ARGS[1])
@@ -105,10 +105,10 @@ final_params_derepr_flexi=CombiCellModelLearning.derepresent_all(p_repr_flexi, m
 @save joinpath(classdir, "loss_history.jld2") loss_history_classical
 @save joinpath(classdir, "model.jld2") model_classical
 
-model_simplex = deepcopy(model_classical)
+model_classical_simplex = deepcopy(model_classical)
 @save joinpath(classSimpdir, "final_params_derepr.jld2") final_params_derepr_classical_simplex
 @save joinpath(classSimpdir, "loss_history.jld2") loss_history_classical_simplex
-@save joinpath(classSimpdir, "model.jld2") model_simplex
+@save joinpath(classSimpdir, "model.jld2") model_classical_simplex
 
 @save joinpath(flexidir, "final_params_derepr.jld2") final_params_derepr_flexi
 @save joinpath(flexidir, "loss_history.jld2") loss_history_flexi
