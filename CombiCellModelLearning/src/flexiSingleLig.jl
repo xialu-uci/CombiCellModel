@@ -6,7 +6,7 @@ using Statistics
 using JLD2
 
 loaddir = "./cleanData"
-@load joinpath(loaddir, "CombiCell_data.jld2") data
+@load joinpath(loaddir, "CombiCell_data_min0.jld2") data
 realLength = length(data["x"])
 
 conditions = ["00", "10", "01", "11"]
@@ -20,13 +20,16 @@ for cond in conditions
     )
 end
 
-parentdir = "03102026_nonsimultaneous_realData-flexi02-fullparams-3x-3000xcmaes-300000xsimplex"
+parentdir = "03112026_nonsimultaneous_realData-flexi02-fullparams-3x-3000xcmaes-300000xsimplex-normalization-min0"
+
+expdir = "../CombiCellLocal/experiments/" * parentdir
 
 
 for cond in conditions
     data_subset = subsets[cond]
     dirName = cond * "_realData"
     classdir = mkdir("../CombiCellLocal/experiments/" * parentdir * "/classical/" * dirName)
+    classSimpdir = mkdir("../CombiCellLocal/experiments/" * parentdir * "/classical-simplex/" * dirName)
     flexidir = mkdir("../CombiCellLocal/experiments/" * parentdir * "/flexi/" * dirName)
     model_classical = CombiCellModelLearning.make_ModelCombiClassic() # defaults nothing are the intPoints for fakeData
     model_flexi = CombiCellModelLearning.make_ModelCombiFlexi() # defaults nothing are the intPoints for fakeData
@@ -45,11 +48,13 @@ for cond in conditions
 
 
     for_simplex_repr, bbo_loss_history = CombiCellModelLearning.bbo_learn_single(learning_problem_classical, p_repr_ig, model_classical.intPoints)
+    final_params_derepr_classical = CombiCellModelLearning.derepresent_all(for_simplex_repr, model_classical.intPoints, model_classical)
     println("Starting simplex optimization with initial loss: $(bbo_loss_history[end])")
     #for_simplex_repr = CombiCellModelLearning.represent(for_simplex_derepr, model.intPoints, model)
     for_cmaes_repr, simplex_loss_history = CombiCellModelLearning.simplex_learn_single(learning_problem_classical, for_simplex_repr, model_classical.intPoints)
     loss_history_classical = bbo_loss_history # save simplex only in flexi loss history for now
-    final_params_derepr_classical=CombiCellModelLearning.derepresent_all(for_cmaes_repr, model_classical.intPoints, model_classical)
+    loss_history_classical_simplex = vcat(bbo_loss_history, simplex_loss_history)
+    final_params_derepr_classical_simplex=CombiCellModelLearning.derepresent_all(for_cmaes_repr, model_classical.intPoints, model_classical)
 
 
     # model_flexi = CombiCellModelLearning.make_ModelCombiFlexi(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
@@ -81,6 +86,11 @@ for cond in conditions
     @save joinpath(classdir, "loss_history.jld2") loss_history_classical
     @save joinpath(classdir, "model.jld2") model_classical
 
+    model_classical_simplex = deepcopy(model_classical)
+    @save joinpath(classSimpdir, "final_params_derepr.jld2") final_params_derepr_classical_simplex
+    @save joinpath(classSimpdir, "loss_history.jld2") loss_history_classical_simplex
+    @save joinpath(classSimpdir, "model.jld2") model_classical_simplex
+
     @save joinpath(flexidir, "final_params_derepr.jld2") final_params_derepr_flexi
     @save joinpath(flexidir, "loss_history.jld2") loss_history_flexi
     @save joinpath(flexidir, "model.jld2") model_flexi
@@ -90,9 +100,21 @@ for cond in conditions
         data_subset, final_params_derepr_classical, loss_history_classical, classdir, model_classical
     )
 
+
+    all_metrics_class_simp, fitData_class_simp = CombiCellModelLearning.generate_all_plots_single(
+        data_subset, final_params_derepr_classical_simplex, loss_history_classical_simplex, classSimpdir, model_classical_simplex
+        )
     all_metrics_flexi, fitData_flexi = CombiCellModelLearning.generate_all_plots_single(
         data_subset, final_params_derepr_flexi, loss_history_flexi, flexidir, model_flexi
     )
+
+    rmse_normed_dict = Dict{String, Float64}(
+        "classical_$cond" => all_metrics_class["RMSE_normed"],
+        "classical_simplex_$cond" => all_metrics_class_simp["RMSE_normed"],
+        "flexi_$cond" => all_metrics_flexi["RMSE_normed"]
+    )
+
+    @save joinpath(expdir, "rmse_normed_dict_$(cond).jld2") rmse_normed_dict
 
     CombiCellModelLearning.plot_flexi(final_params_derepr_flexi.flex1_params, flexidir)
 

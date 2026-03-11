@@ -875,18 +875,28 @@ end
 
 function compute_metrics_single(dataTrue, fitData, savedir)
     o1_data = dataTrue["O1"]
+    o1_data_normed = o1_data./maximum(o1_data)
     o2_data = dataTrue["O2"]
+    o2_data_normed = o2_data./maximum(o2_data)
     o1_fit  = fitData["O1"]
+    o1_fit_normed = o1_fit./maximum(o1_data)
     o2_fit  = fitData["O2"]
+    o2_fit_normed = o2_fit./maximum(o2_data)
+    
 
     all_data = vcat(o1_data, o2_data)
     all_fit  = vcat(o1_fit, o2_fit)
+
+    all_data_normed = vcat(o1_data_normed, o2_data_normed)
+    all_fit_normed = vcat(o1_fit_normed, o2_fit_normed)
+
 
     metrics_dict = Dict{String, Float64}(
         "RMSE_O1"   => sqrt(mean((o1_data .- o1_fit).^2)),
         "RMSE_O2"   => sqrt(mean((o2_data .- o2_fit).^2)),
         "RMSE_combined" => sqrt(mean((all_data .- all_fit).^2)),
-        "bias"      => abs(sum(all_fit .> all_data) / length(all_data) - 0.5)
+        "bias"      => abs(sum(all_fit .> all_data) / length(all_data) - 0.5),
+        "RMSE_normed" => sqrt(mean((all_data_normed .- all_fit_normed).^2))
     )
 
     metrics_path = joinpath(savedir, "model_metrics_single.jld2")
