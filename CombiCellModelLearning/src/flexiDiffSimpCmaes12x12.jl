@@ -27,15 +27,15 @@ dataLength = length(useData["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-DEBUG/true_max_normal" # change for diff exp
+exp = "03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-normalized-true-max" # change for diff exp
 #for i in 1:12
  #   for j in 1:12
-# i = parse(Int, ARGS[1])
-# j = parse(Int, ARGS[2])
+i = parse(Int, ARGS[1])
+j = parse(Int, ARGS[2])
 
-# best case rmse for classical
-i = 3
-j = 3
+# # best case rmse for classical
+# i = 3
+# j = 3
 
 # worst case rmse for classical
 # i = 11
