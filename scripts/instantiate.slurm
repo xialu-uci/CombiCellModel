@@ -32,13 +32,14 @@ julia -e 'println("Julia threads: ", Threads.nthreads()); println("CPU threads v
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel #have to be in parent folder of project 
-OUTPUTPATH=../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-normalized-true-max
+OUTPUTPATH=../CombiCellLocal/experiments/03112026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-normalized-00-min0
 
 cd $SOURCEPATH
 
 mkdir -p $OUTPUTPATH/logs
 mkdir -p $OUTPUTPATH/flexi # comment out for classical only
 mkdir -p $OUTPUTPATH/classical #  comment out for clasical only
+mkdir -p $OUTPUTPATH/classical-simplex # comment out for classical only
 
 # echo "Updating julia using juliaup"
 # date; juliaup update; date

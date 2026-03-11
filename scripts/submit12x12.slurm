@@ -4,7 +4,7 @@
 # lines that start with "#SBATCH" are special directives for Slurm
 # other lines that start with "#" are comments
 
-#SBATCH --job-name=combicell-flexi-trueNormalLoss-All  ## job name
+#SBATCH --job-name=combicell-classical-simplex-flexi-norm00  ## job name
 #SBATCH -A jallard_lab     ## account to charge
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
@@ -14,7 +14,7 @@
 #SBATCH --constraint=intel  # Use Intel nodes hopefully prevents some of the cache issues
 #SBATCH --error=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.err    ## Slurm error  file, %x - job name, %A job id 
 #SBATCH --output=/pub/stilese/2026/CombiCellLocal/logs/slurm-%A.out      ## Slurm output file, %x - job name, %A job id
-#SBATCH --time=0-02:00:00 # Maximum time. # i expect flex <2 hrs, classical <1 hr, 
+#SBATCH --time=0-03:00:00 # Maximum time. # i expect flex <2 hrs, classical <1 hr, gave more time but not sure this is the problem :(
 
 # error and out are default from the first job I ran?
 
@@ -47,9 +47,9 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel # don't think i need this for this run
-OUTPUTPATH=../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-normalized-true-max
+OUTPUTPATH=../CombiCellLocal/experiments/03112026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-normalized-00-min0
 
-RUNNAME=combicell-flexi-trueNormalLoss-All-${SLURM_ARRAY_TASK_ID}
+RUNNAME=combicell-classical-simplex-flexi-norm00-${SLURM_ARRAY_TASK_ID}
 
 
 cd $SOURCEPATH
