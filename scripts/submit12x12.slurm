@@ -81,3 +81,4 @@ logdate=$(date +%y%m%d)
 mkdir -p "$OUTPUTPATH/logs/$logdate"
 # Note: slurm .out/.err files are still open during job - cannot move them here
 mv "$OUTPUTPATH/logs/$SLURM_ARRAY_JOB_ID.$RUNNAME.$SLURM_ARRAY_TASK_ID.log" "$OUTPUTPATH/logs/$logdate/"
+max

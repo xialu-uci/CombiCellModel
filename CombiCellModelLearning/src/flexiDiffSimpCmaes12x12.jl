@@ -12,7 +12,8 @@ using JLD2
 
 loaddir = "./cleanData" # modify for hpc
 @load joinpath(loaddir, "simFlexiData.jld2") simFlexiData
-@load joinpath(loaddir, "CombiCell_data.jld2") data
+# @load joinpath(loaddir, "CombiCell_data.jld2") data
+@load joinpath(loaddir, "CombiCell_data_min0.jld2") data # change to this for real data with min0 processing, change to CombiCell_data.jld2 for real data without min0 processing
 
 # function convert_params(p_repr, flexi_model)
 #   p_class = p_repr.p_classical
@@ -22,12 +23,12 @@ loaddir = "./cleanData" # modify for hpc
 # end
 useData = data # change to data for real data, simFlexiData for simulated flexi data, fakeData for simulated classical data
 dataLength = length(useData["x"])
-#fakeLength = length(simFlexiData["x"])
+#fakeLength = lengthmax(simFlexiData["x"])
 #realLength = length(data["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-normalized-true-max" # change for diff exp
+exp = "03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-DEBUG/normalized-00-max/3models-data-zeromin" # change for diff exp
 #for i in 1:12
  #   for j in 1:12
 i = parse(Int, ARGS[1])
@@ -45,6 +46,7 @@ j = parse(Int, ARGS[2])
  # exit
 dirName = "cd2" * "-"* intPoints[i] * "-" * "pd1"* "-"* intPoints[j]
 classdir = mkdir("../CombiCellLocal/experiments/" * exp * "/classical/" * dirName)
+classSimpdir = mkdir("../CombiCellLocal/experiments/" * exp * "/classical-simplex/" * dirName)
 flexidir = mkdir("../CombiCellLocal/experiments/" * exp * "/flexi/" * dirName)
 model_classical = CombiCellModelLearning.make_ModelCombiClassic(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
 model_flexi = CombiCellModelLearning.make_ModelCombiFlexi(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
@@ -58,16 +60,19 @@ learning_problem_classical = CombiCellModelLearning.LearningProblem(
     p_repr_lb=CombiCellModelLearning.represent(model_classical.p_derepresented_lowerbounds, model_classical.intPoints, model_classical),
     p_repr_ub=CombiCellModelLearning.represent(model_classical.p_derepresented_upperbounds, model_classical.intPoints, model_classical),
     mask = trues(dataLength), # or fakeLength # no mask for now
-    loss_strategy="normalized")
+    loss_strategy="normalized-00")
 
 
 
 for_simplex_repr, bbo_loss_history = CombiCellModelLearning.bbo_learn(learning_problem_classical, p_repr_ig, model_classical.intPoints)
+loss_history_classical = bbo_loss_history # save bbo only in classical loss history for now
+final_params_derepr_classical = CombiCellModelLearning.derepresent_all(for_simplex_repr, model_classical.intPoints, model_classical)
+
 println("Starting simplex optimization with initial loss: $(bbo_loss_history[end])")
 #for_simplex_repr = CombiCellModelLearning.represent(for_simplex_derepr, model.intPoints, model)
 for_cmaes_repr, simplex_loss_history = CombiCellModelLearning.simplex_learn(learning_problem_classical, for_simplex_repr, model_classical.intPoints)
-   loss_history_classical = bbo_loss_history # save simplex only in flexi loss history for now
-   final_params_derepr_classical=CombiCellModelLearning.derepresent_all(for_cmaes_repr, model_classical.intPoints, model_classical)
+   loss_history_classical_simplex = vcat(bbo_loss_history, simplex_loss_history)
+   final_params_derepr_classical_simplex=CombiCellModelLearning.derepresent_all(for_cmaes_repr, model_classical.intPoints, model_classical)
 
 
 # model_flexi = CombiCellModelLearning.make_ModelCombiFlexi(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
@@ -77,7 +82,7 @@ learning_problem_flexi = CombiCellModelLearning.LearningProblem(
     p_repr_lb=CombiCellModelLearning.represent(model_flexi.p_derepresented_lowerbounds, model_flexi.intPoints, model_flexi),
     p_repr_ub=CombiCellModelLearning.represent(model_flexi.p_derepresented_upperbounds, model_flexi.intPoints, model_flexi),
     mask = trues(dataLength), # or fakeLength # no mask for now
-    loss_strategy="normalized")
+    loss_strategy="normalized-00")
 p_repr_flexi = CombiCellModelLearning.convert_params(for_cmaes_repr, model_flexi)
 println(p_repr_flexi)
 loss_history_flexi = simplex_loss_history # save simplex only in flexi loss history for now
@@ -99,6 +104,11 @@ final_params_derepr_flexi=CombiCellModelLearning.derepresent_all(p_repr_flexi, m
 @save joinpath(classdir, "final_params_derepr.jld2") final_params_derepr_classical
 @save joinpath(classdir, "loss_history.jld2") loss_history_classical
 @save joinpath(classdir, "model.jld2") model_classical
+
+model_simplex = deepcopy(model_classical)
+@save joinpath(classSimpdir, "final_params_derepr.jld2") final_params_derepr_classical_simplex
+@save joinpath(classSimpdir, "loss_history.jld2") loss_history_classical_simplex
+@save joinpath(classSimpdir, "model.jld2") model_simplex
 
 @save joinpath(flexidir, "final_params_derepr.jld2") final_params_derepr_flexi
 @save joinpath(flexidir, "loss_history.jld2") loss_history_flexi

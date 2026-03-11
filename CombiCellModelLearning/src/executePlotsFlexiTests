@@ -7,7 +7,7 @@ loaddir = "./cleanData" # modified for hpc
 @load joinpath(loaddir, "CombiCell_data.jld2") data
 useData = data # change here
 
-parentdir = "../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-DEBUG/true_max_normal" # change for diff exp
+parentdir = "../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-DEBUG/normalized-00-max/3models-data-zeromin" # change for diff exp
 #nddirs = readdir(parentdir)
 
 println("Processing condition: classical")
@@ -36,6 +36,19 @@ for savedir in subdirs_classical
     )   # or change to fake data
 end
 
+println("Processing condition: classical-simplex")
+classical_simplex_dir = joinpath(parentdir, "classical-simplex")    
+subdirs_classical_simplex = filter(d -> isdir(d) && !endswith(d, "logs"), readdir(classical_simplex_dir, join=true))
+for savedir in subdirs_classical_simplex
+    # local final_params_derepr, loss_history, model
+    println("Processing: $savedir")
+    @load joinpath(savedir, "final_params_derepr.jld2") final_params_derepr_classical_simplex
+    @load joinpath(savedir, "loss_history.jld2") loss_history_classical_simplex
+    @load joinpath(savedir, "model.jld2") model_simplex
+    all_metrics, fitData = CombiCellModelLearning.generate_all_plots_and_metrics(
+        useData, final_params_derepr_classical_simplex, loss_history_classical_simplex, savedir, model_simplex
+    )   # or change to fake data
+end
 println("Processing condition: flexible")
 flexi_dir = joinpath(parentdir, "flexi")
 
@@ -67,6 +80,9 @@ end
 # heat map classical
 
 CombiCellModelLearning.create_metrics_heatmaps(classical_dir; namingConv = "classical")
+
+# heat map classical-simplex
+CombiCellModelLearning.create_metrics_heatmaps(classical_simplex_dir; namingConv = "classical_simplex")
 
 # heat map flexible
 CombiCellModelLearning.create_metrics_heatmaps(flexi_dir; namingConv = "flexi")
