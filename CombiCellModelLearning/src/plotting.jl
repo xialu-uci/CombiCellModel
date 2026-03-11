@@ -461,7 +461,7 @@ end
 
 using JLD2, CairoMakie
 
-function create_metrics_heatmaps(base_path::String)
+function create_metrics_heatmaps(base_path::String; namingConv = nothing)
     """
     Creates 12x12 heatmaps for worst RMSE, worst bias, cd2 ratio, and pd1 ratio from all model folders.
     
@@ -471,6 +471,8 @@ function create_metrics_heatmaps(base_path::String)
     Returns:
         Dictionary with heatmap figures
     """
+
+    
     
     # Define the intPoints order
     intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP", "lamdaX", "nC", "XO1", "O1max", "O2max"]
@@ -514,7 +516,7 @@ function create_metrics_heatmaps(base_path::String)
 
                 if isfile(metrics_path)
                     metrics = load(metrics_path)["metrics_dict"]
-                    params = load(params_path)["final_params_derepr"]
+                    params = load(params_path)["final_params_derepr$(isnothing(namingConv) ? "" : "_$namingConv")"]
                     p_class = params.p_classical
 
                     # Extract worst metrics
@@ -526,7 +528,7 @@ function create_metrics_heatmaps(base_path::String)
                     end
                     
                     # Handle bias with both possible keys
-                    if haskey(metrics, "Worse_bias_all_conds")
+                    if haskey(metrics, "Worse_bias_all_conds") # typo in every sinlge file :(
                         val = metrics["Worse_bias_all_conds"]
                         if !isnan(val) && !isinf(val)
                             bias_matrix[i, j] = val

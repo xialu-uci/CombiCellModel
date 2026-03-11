@@ -27,15 +27,15 @@ dataLength = length(useData["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-resub" # change for diff exp
+exp = "03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-DEBUG" # change for diff exp
 #for i in 1:12
  #   for j in 1:12
-i = parse(Int, ARGS[1])
-j = parse(Int, ARGS[2])
+# i = parse(Int, ARGS[1])
+# j = parse(Int, ARGS[2])
 
 # best case rmse for classical
-# i = 3
-# j = 3
+i = 3
+j = 3
 
 # worst case rmse for classical
 # i = 11
@@ -70,7 +70,7 @@ for_cmaes_repr, simplex_loss_history = CombiCellModelLearning.simplex_learn(lear
    final_params_derepr_classical=CombiCellModelLearning.derepresent_all(for_cmaes_repr, model_classical.intPoints, model_classical)
 
 
-model_flexi = CombiCellModelLearning.make_ModelCombiFlexi(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
+# model_flexi = CombiCellModelLearning.make_ModelCombiFlexi(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
 learning_problem_flexi = CombiCellModelLearning.LearningProblem(
     data =useData, # fakeData or data (real)
     model= model_flexi,
@@ -79,9 +79,11 @@ learning_problem_flexi = CombiCellModelLearning.LearningProblem(
     mask = trues(dataLength), # or fakeLength # no mask for now
     loss_strategy="normalized")
 p_repr_flexi = CombiCellModelLearning.convert_params(for_cmaes_repr, model_flexi)
+println(p_repr_flexi)
 loss_history_flexi = simplex_loss_history # save simplex only in flexi loss history for now
-for i =1:3 #1:3 works for realData, tried 1:10 for simFlexiData needs even longer
+for k =1:3 #1:3 works for realData, tried 1:10 for simFlexiData needs even longer
   global p_repr_flexi, loss_history_flexi
+  println(p_repr_flexi)
   println("Starting CMA-ES optimization with initial loss: $(simplex_loss_history[end])")
   p_repr_flexi, cmaes_loss_i = CombiCellModelLearning.cmaes_learn(learning_problem_flexi, p_repr_flexi, model_flexi.intPoints; upper_bound_multiplier=10.0)
   push!(loss_history_flexi, cmaes_loss_i...)
