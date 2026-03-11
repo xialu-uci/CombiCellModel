@@ -7,7 +7,7 @@ loaddir = "./cleanData" # modified for hpc
 @load joinpath(loaddir, "CombiCell_data.jld2") data
 useData = data # change here
 
-parentdir = "../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-DEBUG" # change for diff exp
+parentdir = "../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex" # change for diff exp
 #nddirs = readdir(parentdir)
 
 println("Processing condition: classical")
@@ -66,10 +66,10 @@ end
 
 # heat map classical
 
-# CombiCellModelLearning.create_metrics_heatmaps(classical_dir)
+CombiCellModelLearning.create_metrics_heatmaps(classical_dir; namingConv = "classical")
 
 # heat map flexible
-# CombiCellModelLearning.create_metrics_heatmaps(flexi_dir)
+CombiCellModelLearning.create_metrics_heatmaps(flexi_dir; namingConv = "flexi")
 
 
 

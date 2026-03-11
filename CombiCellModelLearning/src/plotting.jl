@@ -324,25 +324,29 @@ function compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
     for cond in ligand_conds
         # Get O1 and O2 data for this condition
         o1_data = dataTrue["O1_$cond"]
-        # o1_data_normed = o1_data ./ maximum(o1_data) # 
+        o1_data_normed = o1_data ./ maximum(o1_data) # 
         o2_data = dataTrue["O2_$cond"]
-        #o2_data_normed = o2_data ./ maximum(o2_data)
+        o2_data_normed = o2_data ./ maximum(o2_data)
         o1_fit = fitData["O1_$cond"]
-       # o1_fit_normed = o1_fit ./ maximum(o1_fit)
+        o1_fit_normed = o1_fit ./ maximum(o1_data)
         o2_fit = fitData["O2_$cond"]
-        #o2_fit_normed = o1_fit ./ maximum(o2_fit)
+        o2_fit_normed = o2_fit ./ maximum(o2_data)
         
         # Combine O1 and O2 for condition-level metrics
         all_data = vcat(o1_data, o2_data)
         all_fit = vcat(o1_fit, o2_fit)
 
         # standards
-        # all_data_normed = vcat(o1_data_normed, o2_data_normed)
-        # all_fit_normed = vcat(o1_fit_normed, o2_fit_normed)
+        all_data_normed = vcat(o1_data_normed, o2_data_normed)
+        all_fit_normed = vcat(o1_fit_normed, o2_fit_normed)
         
         # Calculate RMSE for this condition
         rmse = sqrt(mean((all_data .- all_fit).^2))
         metrics_dict["RMSE_$cond"] = rmse
+
+        # normed rmse
+        rmse_normed = sqrt(mean((all_data_normed .- all_fit_normed).^2))
+        metrics_dict["RMSE_normed_$cond"] = rmse_normed
 
         # # standard RMSE for this condition
         # rmse = sqrt(mean((all_data_normed .- all_fit_normed).^2))
@@ -370,14 +374,16 @@ function compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
     # Calculate overall metrics across all conditions
     cond_rmse = [metrics_dict["RMSE_$cond"] for cond in ligand_conds]
     cond_bias = [metrics_dict["bias_$cond"] for cond in ligand_conds]
+    cond_rmse_normed = [metrics_dict["RMSE_normed_$cond"] for cond in ligand_conds]
     
     metrics_dict["Worst_RMSE_all_conds"] = maximum(cond_rmse)
-    metrics_dict["Worse_bias_all_conds"] = maximum(cond_bias)
+    metrics_dict["Worst_bias_all_conds"] = maximum(cond_bias)
+    metrics_dict["Worst_normed_RMSE_all_conds"] = maximum(cond_rmse_normed)
     
     
     # println("-"^60)
     # println("Overall Metrics:")
-    # println("  Worse RMSE across conditions:  $(round(maximum(cond_rmse), digits=6))")
+    # println("  Worst RMSE across conditions:  $(round(maximum(cond_rmse), digits=6))")
     # println("  worst Bias across conditions:  $(round(maximum(cond_bias), digits=6))")
     
     # Save metrics
@@ -491,6 +497,7 @@ function create_metrics_heatmaps(base_path::String; namingConv = nothing)
     cd2_ratio_matrix = fill(NaN, 12, 12)
     pd1_ratio_matrix = fill(NaN, 12, 12)
     both_ratio_matrix = fill(NaN, 12, 12)
+    rmse_normed_matrix = fill(NaN, 12, 12)
 
     
     # Track which indices we've found
@@ -527,14 +534,20 @@ function create_metrics_heatmaps(base_path::String; namingConv = nothing)
                         end
                     end
                     
+                    if haskey(metrics, "Worst_normed_RMSE_all_conds")
+                        val = metrics["Worst_normed_RMSE_all_conds"]
+                        if !isnan(val) && !isinf(val)
+                            rmse_normed_matrix[i, j] = val
+                        end
+                    end 
                     # Handle bias with both possible keys
-                    if haskey(metrics, "Worse_bias_all_conds") # typo in every sinlge file :(
-                        val = metrics["Worse_bias_all_conds"]
+                    if haskey(metrics, "Worst_bias_all_conds") 
+                        val = metrics["Worst_bias_all_conds"]
                         if !isnan(val) && !isinf(val)
                             bias_matrix[i, j] = val
                         end
-                    elseif haskey(metrics, "Worst_bias_all_conds")
-                        val = metrics["Worst_bias_all_conds"]
+                    elseif haskey(metrics, "Worse_bias_all_conds") # handle legacy typo key
+                        val = metrics["Worse_bias_all_conds"]
                         if !isnan(val) && !isinf(val)
                             bias_matrix[i, j] = val
                         end
@@ -566,6 +579,8 @@ function create_metrics_heatmaps(base_path::String; namingConv = nothing)
     # Get valid ranges for color scaling
     valid_rmse = filter(!isnan, rmse_matrix[:])
     valid_rmse = filter(!isinf, valid_rmse)
+    valid_normed_rmse = filter(!isnan, rmse_normed_matrix[:])
+    valid_normed_rmse = filter(!isinf, valid_normed_rmse)
     valid_bias = filter(!isnan, bias_matrix[:])
     valid_bias = filter(!isinf, valid_bias)
     valid_cd2_ratio = filter(!isnan, cd2_ratio_matrix[:])
@@ -623,6 +638,16 @@ function create_metrics_heatmaps(base_path::String; namingConv = nothing)
                        nan_color=:lightgray)
     annotate_cells!(ax_rmse, rmse_matrix; textcolor=:white)
     Colorbar(fig_rmse[1, 2], hm_rmse, label="RMSE")
+
+    # rmse normed heatmap
+    fig_rmse_normed = Figure(size=(1200, 1000))
+    ax_rmse_normed = make_axis(fig_rmse_normed, "Worst Normed RMSE Across All Conditions", "cd2 parameter", "pd1 parameter")
+    hm_rmse_normed = heatmap!(ax_rmse_normed, 1:12, 1:12, rmse_normed_matrix,
+                       colormap=:viridis,
+                       colorrange=(minimum(valid_normed_rmse), maximum(valid_normed_rmse)),
+                       nan_color=:lightgray)
+    annotate_cells!(ax_rmse_normed, rmse_normed_matrix; textcolor=:white)
+    Colorbar(fig_rmse_normed[1, 2], hm_rmse_normed, label="Normed RMSE")
     
     # Bias Heatmap
     fig_bias = Figure(size=(1200, 1000))
@@ -679,6 +704,7 @@ function create_metrics_heatmaps(base_path::String; namingConv = nothing)
     
     # Save figures
     save(joinpath(base_path, "rmse_heatmap.png"), fig_rmse)
+    save(joinpath(base_path, "rmse_normed_heatmap.png"), fig_rmse_normed)
     save(joinpath(base_path, "bias_heatmap.png"), fig_bias)
     save(joinpath(base_path, "cd2_ratio_heatmap.png"), fig_cd2)
     save(joinpath(base_path, "pd1_ratio_heatmap.png"), fig_pd1)
@@ -686,6 +712,7 @@ function create_metrics_heatmaps(base_path::String; namingConv = nothing)
 
     println("\nHeatmaps saved to:")
     println("  RMSE:      $(joinpath(base_path, "rmse_heatmap.png"))")
+    println("  Normed RMSE: $(joinpath(base_path, "rmse_normed_heatmap.png"))")
     println("  Bias:      $(joinpath(base_path, "bias_heatmap.png"))")
     println("  CD2 Ratio: $(joinpath(base_path, "cd2_ratio_heatmap.png"))")
     println("  PD1 Ratio: $(joinpath(base_path, "pd1_ratio_heatmap.png"))")

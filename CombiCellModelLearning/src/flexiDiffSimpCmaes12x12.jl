@@ -27,7 +27,7 @@ dataLength = length(useData["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-DEBUG" # change for diff exp
+exp = "03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-DEBUG/true_max_normal" # change for diff exp
 #for i in 1:12
  #   for j in 1:12
 # i = parse(Int, ARGS[1])
