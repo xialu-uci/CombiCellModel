@@ -29,10 +29,18 @@ function get_loss(p_repr, intPoints; learning_problem::LearningProblem{M}) where
         output_true_normed = output_true_matrix ./ joint_max
         output_pred_normed = output_pred_matrix ./ joint_max
         ssr = norm(output_true_normed - output_pred_normed);
-    elseif learning_problem.loss_strategy == "normalized" # normalized with true max only, to avoid issues with very small predicted values dominating the loss
+    elseif learning_problem.loss_strategy == "normalized-true" # normalized with true max only, to avoid issues with very small predicted values dominating the loss
         true_max = maximum(abs.(output_true_matrix), dims = 1)
         output_true_normed = output_true_matrix ./ true_max
         output_pred_normed = output_pred_matrix ./ true_max
+        ssr = norm(output_true_normed - output_pred_normed);
+    elseif learning_problem.loss_strategy == "normalized-00" # normalized with 00 max only, to avoid issues with very small predicted values dominating the loss
+        mat_00 = hcat(O1_00, O2_00)
+        max00_mini = maximum(abs.(mat_00), dims = 1)
+        # max00 = [max00_mini[1], max00_mini[2], max00_mini[1], max00_mini[2], max00_mini[1], max00_mini[2], max00_mini[1], max00_mini[2]]
+        max00 = hcat(max00_mini, max00_mini, max00_mini, max00_mini) # repeat each element 4 times to match the 8 columns of the output matrices
+        output_true_normed = output_true_matrix ./ max00
+        output_pred_normed = output_pred_matrix ./ max00
         ssr = norm(output_true_normed - output_pred_normed);
     end
 
