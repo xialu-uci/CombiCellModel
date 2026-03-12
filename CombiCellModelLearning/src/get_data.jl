@@ -63,3 +63,23 @@ function get_data_min0(; save_data=false)
 
     return data
 end
+
+function get_data_O1(; save_data = false)
+    data = get_data_min0(save_data = false)
+    ligand_conds = ["00", "10", "01", "11"]
+    for ligand_cond in ligand_conds
+        col_name_O2 = "O2" * "_" * ligand_cond
+        data[col_name_O2] = zeros(length(data[col_name_O2]))
+    end
+ 
+
+    if save_data
+        base_path = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/"
+        @save joinpath(base_path, "data/CombiCell_data_O1only_min0.jld2") data
+    end
+
+    return data
+    
+
+
+end
