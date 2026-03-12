@@ -1,13 +1,14 @@
 using Makie
 using CairoMakie
 using JLD2
+using CombiCellModelLearning
 
 loaddir = "./cleanData" # modified for hpc
 @load joinpath(loaddir, "simFlexiData.jld2") simFlexiData
-@load joinpath(loaddir, "CombiCell_data.jld2") data
+@load joinpath(loaddir, "CombiCell_data_min0.jld2") data
 useData = data # change here
 
-parentdir = "../CombiCellLocal/experiments/03102026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-DEBUG/normalized-00-max/3models-data-zeromin" # change for diff exp
+parentdir = "../CombiCellLocal/experiments/03112026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-normalized-00-min0" # change for diff exp
 #nddirs = readdir(parentdir)
 
 println("Processing condition: classical")
@@ -44,9 +45,9 @@ for savedir in subdirs_classical_simplex
     println("Processing: $savedir")
     @load joinpath(savedir, "final_params_derepr.jld2") final_params_derepr_classical_simplex
     @load joinpath(savedir, "loss_history.jld2") loss_history_classical_simplex
-    @load joinpath(savedir, "model.jld2") model_simplex
+    @load joinpath(savedir, "model.jld2") model_classical_simplex
     all_metrics, fitData = CombiCellModelLearning.generate_all_plots_and_metrics(
-        useData, final_params_derepr_classical_simplex, loss_history_classical_simplex, savedir, model_simplex
+        useData, final_params_derepr_classical_simplex, loss_history_classical_simplex, savedir, model_classical_simplex
     )   # or change to fake data
 end
 println("Processing condition: flexible")
