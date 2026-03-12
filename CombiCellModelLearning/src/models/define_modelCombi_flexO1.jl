@@ -23,7 +23,7 @@ function make_ModelCombiFlexi(;intPoint1 = nothing, intPoint2 = nothing, flexi_d
         nC=2.0, #(1.5,2.5)
         XO1=0.5, #(0.3,0.7)
         O1max=0.8, #(0.7,1.0)
-        O2max=100.0, #(80,120)
+        O2max=0.0, #(80,120)
         # extraCD2 = 0.97,
         # extraPD1 = 70.0
     )
@@ -48,7 +48,7 @@ function make_ModelCombiFlexi(;intPoint1 = nothing, intPoint2 = nothing, flexi_d
         nC=0.01 ,
         XO1=0.01,
         O1max=0.1,
-        O2max=10.0,
+        O2max=0.0,
         # extraCD2 = 0.5, # have to change how handling this later
         # extraPD1 = 20.0
     )
@@ -71,7 +71,7 @@ function make_ModelCombiFlexi(;intPoint1 = nothing, intPoint2 = nothing, flexi_d
         nC=5.0,
         XO1=1.0,
         O1max=1.0,
-        O2max=200.0,
+        O2max=0.0,
         # extraCD2 = 1.0; # have to change how handling later
         # extraPD1 = 200.0
     )
@@ -166,10 +166,12 @@ function fw(x::Vector{Float64}, kD::Vector{Float64}, p_all_derepresented, model:
         X = CN^nC / (lambdaX^nC + CN^nC)
 
         O1_val = X / (XO1 + X)
-        O2_val = X
+        # O2_val = X
 
-        O1i = O1max * O1_val
-        O2i = O2max  *abs(FlexiFunctions.evaluate_decompress(abs(O2_val), p_all_derepresented.flex1_params)) 
+    
+        O1i = O1max  *abs(FlexiFunctions.evaluate_decompress(abs(O1_val), p_all_derepresented.flex1_params)) 
+        # O2i = O2max * O2_val
+        O2i = 0.0
 
         push!(O1, O1i)
         push!(O2, O2i)

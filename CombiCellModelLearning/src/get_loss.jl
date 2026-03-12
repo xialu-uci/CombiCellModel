@@ -72,6 +72,10 @@ function get_single_loss(p_repr, intPoints; learning_problem::LearningProblem{M}
     # ssr = sum((O1_00_pred .- O1_00).^2) + sum((O2_00_pred .- O2_00).^2)
     if learning_problem.loss_strategy == "vanilla"
         ssr = norm(output_true_matrix - output_pred_matrix) # default p =2 (frobenius)
+
+    elseif learning_problem.loss_strategy == "o1_only"
+        ssr = norm(O1 - output_pred_matrix[:,1])
+        
     elseif learning_problem.loss_strategy == "normalized-joint"
         joint_mat = vcat(output_pred_matrix, output_true_matrix)
         joint_max = maximum(abs.(joint_mat), dims = 1)
