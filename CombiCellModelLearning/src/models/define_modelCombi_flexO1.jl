@@ -1,4 +1,4 @@
-struct ModelCombiFlexi <: AbstractFlexiModel
+struct ModelCombiFlexiO1 <: AbstractFlexiModel
     p_classical_derepresented_ig::ComponentArray{Float64} # classical parameters
     p_derepresented_lowerbounds::ComponentArray{Float64} # lower bounds for derepresented parameters
     p_derepresented_upperbounds::ComponentArray{Float64} # upper bounds for derepresented parameters
@@ -9,7 +9,7 @@ struct ModelCombiFlexi <: AbstractFlexiModel
     
 end
 
-function make_ModelCombiFlexi(;intPoint1 = nothing, intPoint2 = nothing, flexi_dofs=20)
+function make_ModelCombiFlexi_O1(;intPoint1 = nothing, intPoint2 = nothing, flexi_dofs=20)
    # close initial guess 
     p_base_derepresented_ig = ComponentArray(
         fI=0.5,
@@ -138,7 +138,7 @@ function make_ModelCombiFlexi(;intPoint1 = nothing, intPoint2 = nothing, flexi_d
     
 
 
-    return ModelCombiFlexi(
+    return ModelCombiFlexiO1(
         p_classical_derepresented_ig,
        # p_extra_derepresented_ig?
         p_derepresented_lowerbounds,
@@ -150,7 +150,7 @@ function make_ModelCombiFlexi(;intPoint1 = nothing, intPoint2 = nothing, flexi_d
     )
 end
 
-function fw(x::Vector{Float64}, kD::Vector{Float64}, p_all_derepresented, model::ModelCombiFlexi)
+function fw(x::Vector{Float64}, kD::Vector{Float64}, p_all_derepresented, model::ModelCombiFlexiO1)
 
 # for no accessory condition p_class is just p_derepresented.p_classical
     fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max = p_all_derepresented.p_classical
@@ -219,7 +219,7 @@ end
 # return exp(extra) # messes with instantiation these are actually globally defined
 # end
 
-function represent_on_type(p_derepresented, intPoints, model_by_type::Type{ModelCombiFlexi})
+function represent_on_type(p_derepresented, intPoints, model_by_type::Type{ModelCombiFlexiO1})
     # initial transformations, subject to change
     base = ComponentArray(
         fI=log(p_derepresented.fI),  # log
@@ -248,9 +248,9 @@ function represent_on_type(p_derepresented, intPoints, model_by_type::Type{Model
         return base
     end
     
-end
+end # does not need redef
 
-function derepresent(p_repr, intPoints, model::ModelCombiFlexi)
+function derepresent(p_repr, intPoints, model::ModelCombiFlexiO1)
     base = ComponentArray(
         fI=exp(p_repr.fI),  # TODO: rerun bicycle.jl given fix
         alpha=exp(p_repr.alpha),

@@ -436,7 +436,7 @@ function compute_param_ratios(i,j, fitted_params)
 end
 
 # Main function with Makie plots
-function generate_all_plots_and_metrics(dataTrue, fitted_params, loss_history, savedir, model)
+function generate_all_plots_and_metrics(dataTrue, fitted_params, loss_history, savedir, model; o1_only = false)
     """
     Convenience function to generate all plots and compute metrics using Makie.
     """
@@ -466,7 +466,7 @@ function generate_all_plots_and_metrics(dataTrue, fitted_params, loss_history, s
     
     # Step 6: Compute metrics
     println("\n6. Computing metrics...")
-    metrics = compute_metrics_per_ligand_condition(dataTrue, fitData, savedir)
+    metrics = compute_metrics_per_ligand_condition(dataTrue, fitData, savedir; o1_only = o1_only)
     
     println("\n" * "="^60)
     println("All plots and metrics generated successfully!")
@@ -932,7 +932,7 @@ function compute_metrics_single(dataTrue, fitData, savedir; o1_only = false)
     return metrics_dict
 end
 
-function generate_all_plots_single(dataTrue, fitted_params, loss_history, savedir, model)
+function generate_all_plots_single(dataTrue, fitted_params, loss_history, savedir, model; o1_only = false)
     println("\n" * "="^60)
     println("Generating Single-Condition Plots")
     println("="^60)
@@ -950,7 +950,7 @@ function generate_all_plots_single(dataTrue, fitted_params, loss_history, savedi
     plot_single_residuals(dataTrue, fitData, savedir)
 
     println("\n5. Computing metrics...")
-    metrics = compute_metrics_single(dataTrue, fitData, savedir)
+    metrics = compute_metrics_single(dataTrue, fitData, savedir; o1_only = o1_only)
 
     println("\n" * "="^60)
     println("Done!")

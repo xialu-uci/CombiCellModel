@@ -6,7 +6,7 @@ using Statistics
 using JLD2
 
 loaddir = "./cleanData"
-@load joinpath(loaddir, "CombiCell_data_min0.jld2") data
+@load joinpath(loaddir, "CombiCell_data_O1only_min0.jld2") data
 realLength = length(data["x"])
 
 conditions = ["00", "10", "01", "11"]
@@ -20,7 +20,7 @@ for cond in conditions
     )
 end
 
-parentdir = "03112026_nonsimultaneous_realData-flexi02-fullparams-3x-3000xcmaes-300000xsimplex-normalization-min0"
+parentdir = "03122026_nonsimultaneous_realData_flexiO1"
 
 expdir = "../CombiCellLocal/experiments/" * parentdir
 
@@ -43,7 +43,7 @@ for cond in conditions
         p_repr_lb=CombiCellModelLearning.represent(model_classical.p_derepresented_lowerbounds, model_classical.intPoints, model_classical),
         p_repr_ub=CombiCellModelLearning.represent(model_classical.p_derepresented_upperbounds, model_classical.intPoints, model_classical),
         mask = trues(realLength), # or fakeLength # no mask for now
-        loss_strategy="normalized-00")
+        loss_strategy="o1_only")
 
 
 
@@ -64,7 +64,7 @@ for cond in conditions
         p_repr_lb=CombiCellModelLearning.represent(model_flexi.p_derepresented_lowerbounds, model_flexi.intPoints, model_flexi),
         p_repr_ub=CombiCellModelLearning.represent(model_flexi.p_derepresented_upperbounds, model_flexi.intPoints, model_flexi),
         mask = trues(realLength), # or fakeLength # no mask for now
-        loss_strategy="normalized-00")
+        loss_strategy="o1_only")
     p_repr_flexi = CombiCellModelLearning.convert_params(for_cmaes_repr, model_flexi)
     loss_history_flexi = simplex_loss_history # save simplex only in flexi loss history for now
     for i =1:3 #1:3 works for realData, tried 1:10 for simFlexiData needs even longer
@@ -119,7 +119,6 @@ for cond in conditions
     CombiCellModelLearning.plot_flexi(final_params_derepr_flexi.flex1_params, flexidir)
 
 
-
     # println("\n" * "="^40)
     # println("Condition $cond RMSE Summary")
     # println("="^40)
@@ -129,3 +128,27 @@ for cond in conditions
     # println("  Bias:          $(round(all_metrics["bias"], digits=6))")
     # println("="^40 * "\n")
 end
+
+# ── RMSE Normalized Summary Table ─────────────────────────────────────────────
+all_rmse = Dict{String, Dict{String, Float64}}()
+for cond in conditions
+    @load joinpath(expdir, "rmse_normed_dict_$(cond).jld2") rmse_normed_dict
+    all_rmse[cond] = rmse_normed_dict
+end
+ 
+col_width = 22
+header_labels = ["Classical", "Classical+Simplex", "Flexi"]
+keys_per_cond = ["classical", "classical_simplex", "flexi"]
+ 
+sep = "="^(9 + col_width * 3 + 3)
+println("\n" * sep)
+println("RMSE Normalized Summary (all conditions)")
+println(sep)
+println(rpad("Cond", 9) * join([lpad(h, col_width) for h in header_labels]))
+println("-"^(9 + col_width * 3 + 3))
+for cond in conditions
+    row_vals = [get(all_rmse[cond], "$(k)_$(cond)", NaN) for k in keys_per_cond]
+    println(rpad(cond, 9) * join([lpad(round(v, digits=6), col_width) for v in row_vals]))
+end
+println(sep)
+ 

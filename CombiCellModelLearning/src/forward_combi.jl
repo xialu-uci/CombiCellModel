@@ -22,7 +22,7 @@ function forward_combi(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented,
     return hcat((col for (o1, o2) in results for col in (o1, o2))...)
 end
 
-function forward_combi(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::ModelCombiFlexi)
+function forward_combi(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::AbstractFlexiModel)
     intPoint1, intPoint2 = model.intPoints
     
      if isnothing(intPoint1) && isnothing(intPoint2)
@@ -60,7 +60,7 @@ function forward_simple(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented
     return hcat(O1, O2)
 end
 
-function forward_simple(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::ModelCombiFlexi)
+function forward_simple(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented, model::AbstractFlexiModel)
     fI, alpha, tT, g1, k_on_2d, kP, nKP, lambdaX, nC, XO1, O1max, O2max = p_derepresented.p_classical
     p_class = ComponentArray(
         fI=fI, alpha=alpha, tT=tT, g1=g1, k_on_2d=k_on_2d,
@@ -72,7 +72,7 @@ function forward_simple(x::Vector{Float64}, kD::Vector{Float64}, p_derepresented
     return hcat(O1, O2)
 end
 
-function convert_params(p_repr, flexi_model::ModelCombiFlexi)
+function convert_params(p_repr, flexi_model::AbstractFlexiModel)
   p_class = p_repr.p_classical
   p_flex = flexi_model.params_repr_ig.flex1_params
   return ComponentArray(p_classical=p_class, flex1_params=p_flex)
