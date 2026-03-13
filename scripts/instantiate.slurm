@@ -32,7 +32,7 @@ julia -e 'println("Julia threads: ", Threads.nthreads()); println("CPU threads v
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel #have to be in parent folder of project 
-OUTPUTPATH=../CombiCellLocal/experiments/03112026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-normalized-00-min0
+OUTPUTPATH=../CombiCellLocal/experiments/03122026_realData_flexiO1-fullparams-3x-3000xcmaes-300000xsimplex-o1_only
 
 cd $SOURCEPATH
 

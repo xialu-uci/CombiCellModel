@@ -22,26 +22,26 @@ loaddir = "./cleanData" # modify for hpc
   
 # end
 useData = data # change to data for real data, simFlexiData for simulated flexi data, fakeData for simulated classical data
-println(data)
+#println(data)
 dataLength = length(useData["x"])
 #fakeLength = lengthmax(simFlexiData["x"])
 #realLength = length(data["x"])
 # now let's make a classical model and try to fit parameters to the simulated data
 # differential evolution
 intPoints = ["fI", "alpha", "tT", "g1", "k_on_2d", "kP", "nKP","lamdaX", "nC", "XO1", "O1max", "O2max"]
-exp = "03122026_realData_flexiO1_tests" # change for diff exp
+exp = "03122026_realData_flexiO1-fullparams-3x-3000xcmaes-300000xsimplex-o1_only" # change for diff exp
 #for i in 1:11
  #   for j in 1:11
-# i = parse(Int, ARGS[1])
-# j = parse(Int, ARGS[2])
+i = parse(Int, ARGS[1])
+j = parse(Int, ARGS[2])
 
 # # best case rmse for classical
 # i = 3
 # j = 3
 
 # worst case rmse for classical
-i = 11
-j = 11
+# i = 11
+# j = 11
 
  # println(i,j)
  # exit

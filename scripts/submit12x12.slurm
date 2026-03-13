@@ -4,7 +4,7 @@
 # lines that start with "#SBATCH" are special directives for Slurm
 # other lines that start with "#" are comments
 
-#SBATCH --job-name=combicell-classical-simplex-flexi-norm00  ## job name
+#SBATCH --job-name=combicell-classical-simplex-flexi-o1-only  ## job name
 #SBATCH -A jallard_lab     ## account to charge
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=4 ## (-c) number of cpus to allocate (PER ARRAY JOB)
@@ -47,9 +47,9 @@ julia -e 'using LinearAlgebra; println("BLAS threads: ", BLAS.get_num_threads())
 
 # Set up the experiment
 SOURCEPATH=/pub/stilese/2026/CombiCellModel # don't think i need this for this run
-OUTPUTPATH=../CombiCellLocal/experiments/03112026_realData_flexiO2-fullparams-3x-3000xcmaes-300000xsimplex-normalized-00-min0
+OUTPUTPATH=../CombiCellLocal/experiments/03122026_realData_flexiO1-fullparams-3x-3000xcmaes-300000xsimplex-o1_only
 
-RUNNAME=combicell-classical-simplex-flexi-norm00-${SLURM_ARRAY_TASK_ID}
+RUNNAME=combicell-classical-simplex-flexi-o1-only-${SLURM_ARRAY_TASK_ID}
 
 
 cd $SOURCEPATH
@@ -66,14 +66,14 @@ date
 echo "=== End precompilation check ==="
 
 # execute script
-INPUT=$SOURCEPATH/scripts/144args.txt
+INPUT=$SOURCEPATH/scripts/121args.txt
 ARGS=$(awk "NR==$SLURM_ARRAY_TASK_ID" $INPUT)
 
 echo "Arguments: $ARGS"
 
 
 echo "Running flexiDiffSimpCmaes12x12" # change for flexi or classical
-date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning CombiCellModelLearning/src/flexiDiffSimpCmaes12x12.jl $ARGS \
+date; /usr/bin/time -v stdbuf -oL julia +1.11.6 --project=CombiCellModelLearning CombiCellModelLearning/src/flexiDiffSimpCmaesO1_11x11.jl $ARGS \
 > $OUTPUTPATH/logs/$SLURM_ARRAY_JOB_ID.$RUNNAME.$SLURM_ARRAY_TASK_ID.log 2>&1 ; date
 
 # After job completes, move the logs
