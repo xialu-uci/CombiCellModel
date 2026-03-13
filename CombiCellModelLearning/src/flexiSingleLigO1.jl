@@ -20,7 +20,7 @@ for cond in conditions
     )
 end
 
-parentdir = "03122026_nonsimultaneous_realData_flexiO1/dofs_50"
+parentdir = "03122026_nonsimultaneous_realData_flexiO1/dofs_50_5xcmaes-simplex"
 
 expdir = "../CombiCellLocal/experiments/" * parentdir
 
@@ -32,7 +32,7 @@ for cond in conditions
     classSimpdir = mkdir("../CombiCellLocal/experiments/" * parentdir * "/classical-simplex/" * dirName)
     flexidir = mkdir("../CombiCellLocal/experiments/" * parentdir * "/flexi/" * dirName)
     model_classical = CombiCellModelLearning.make_ModelCombiClassic() # defaults nothing are the intPoints for fakeData
-    model_flexi = CombiCellModelLearning.make_ModelCombiFlexi_O1(;flexi_dofs = 50) # defaults nothing are the intPoints for fakeData
+    model_flexi = CombiCellModelLearning.make_ModelCombiFlexi_O1(;flexi_dofs = 20) # defaults nothing are the intPoints for fakeData
     # model = CombiCellModelLearning.make_ModelCombiFlexi(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
 
     p_repr_ig = deepcopy(model_classical.params_repr_ig)
@@ -67,7 +67,7 @@ for cond in conditions
         loss_strategy="o1_only")
     p_repr_flexi = CombiCellModelLearning.convert_params(for_cmaes_repr, model_flexi)
     loss_history_flexi = simplex_loss_history # save simplex only in flexi loss history for now
-    for i =1:5 #1:3 works for realData, tried 1:10 for simFlexiData needs even longer
+    for i =1:3 #1:3 works for realData, tried 1:10 for simFlexiData needs even longer
         # global p_repr_flexi, loss_history_flexi
         println("what are intpoints for flexi: $(model_flexi.intPoints)")
         println("Starting CMA-ES optimization with initial loss: $(simplex_loss_history[end])")
