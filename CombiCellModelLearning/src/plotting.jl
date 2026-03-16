@@ -477,7 +477,7 @@ end
 
 using JLD2, CairoMakie
 
-function create_metrics_heatmaps(base_path::String; namingConv = nothing, rmse_normed_ref::Float64 = nothing)
+function create_metrics_heatmaps(base_path::String; namingConv = nothing, rmse_ref::Float64 = nothing, rmse_normed_ref::Float64 = nothing)
     """
     Creates 12x12 heatmaps for worst RMSE, worst bias, cd2 ratio, and pd1 ratio from all model folders.
     
@@ -648,6 +648,23 @@ function create_metrics_heatmaps(base_path::String; namingConv = nothing, rmse_n
                        nan_color=:lightgray)
     annotate_cells!(ax_rmse, rmse_matrix; textcolor=:white)
     Colorbar(fig_rmse[1, 2], hm_rmse, label="RMSE")
+
+    if !isnothing(rmse_ref)
+        for i in 1:12, j in 1:12
+            if !isnan(rmse_matrix[i, j]) && !isinf(rmse_matrix[i, j]) &&
+               rmse_matrix[i, j] < rmse_ref
+                # Draw a rectangle border around the cell
+                # heatmap cells are centered at (i, j) and span ±0.5
+                lines!(ax_rmse,
+                       [i - 0.5, i + 0.5, i + 0.5, i - 0.5, i - 0.5],
+                       [j - 0.5, j - 0.5, j + 0.5, j + 0.5, j - 0.5],
+                       color=:red, linewidth=2.5)
+            end
+        end
+        # Add a note in the title or as a label
+        ax_rmse.title = "Worst Normed RMSE Across All Conditions (red box: < $(rmse_normed_ref))"
+    end
+    
 
     # rmse normed heatmap
     # rmse normed heatmap
