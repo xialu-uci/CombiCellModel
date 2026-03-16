@@ -20,7 +20,7 @@ for cond in conditions
     )
 end
 
-parentdir = "03122026_nonsimultaneous_realData_flexiO1/dofs_50_5xcmaes-simplex"
+parentdir = "03122026_nonsimultaneous_realData_flexiO1/dofs_20"
 
 expdir = "../CombiCellLocal/experiments/" * parentdir
 
@@ -28,9 +28,9 @@ expdir = "../CombiCellLocal/experiments/" * parentdir
 for cond in conditions
     data_subset = subsets[cond]
     dirName = cond * "_realData"
-    classdir = mkdir("../CombiCellLocal/experiments/" * parentdir * "/classical/" * dirName)
-    classSimpdir = mkdir("../CombiCellLocal/experiments/" * parentdir * "/classical-simplex/" * dirName)
-    flexidir = mkdir("../CombiCellLocal/experiments/" * parentdir * "/flexi/" * dirName)
+    classdir = "../CombiCellLocal/experiments/" * parentdir * "/classical/" * dirName
+    classSimpdir = "../CombiCellLocal/experiments/" * parentdir * "/classical-simplex/" * dirName
+    flexidir = "../CombiCellLocal/experiments/" * parentdir * "/flexi/" * dirName
     model_classical = CombiCellModelLearning.make_ModelCombiClassic() # defaults nothing are the intPoints for fakeData
     model_flexi = CombiCellModelLearning.make_ModelCombiFlexi_O1(;flexi_dofs = 20) # defaults nothing are the intPoints for fakeData
     # model = CombiCellModelLearning.make_ModelCombiFlexi(intPoint1= i, intPoint2=j) # defaults 11,12 are the intPoints for fakeData
@@ -108,13 +108,13 @@ for cond in conditions
         data_subset, final_params_derepr_flexi, loss_history_flexi, flexidir, model_flexi; o1_only = true
     )
 
-    rmse_normed_dict = Dict{String, Float64}(
-        "classical_$cond" => all_metrics_class["RMSE_normed"],
-        "classical_simplex_$cond" => all_metrics_class_simp["RMSE_normed"],
-        "flexi_$cond" => all_metrics_flexi["RMSE_normed"]
+    rmse_dict = Dict{String, Float64}(
+        "classical_$cond" => all_metrics_class["RMSE"],
+        "classical_simplex_$cond" => all_metrics_class_simp["RMSE"],
+        "flexi_$cond" => all_metrics_flexi["RMSE"]
     )
 
-    @save joinpath(expdir, "rmse_normed_dict_$(cond).jld2") rmse_normed_dict
+    @save joinpath(expdir, "rmse_dict_$(cond).jld2") rmse_dict
 
     CombiCellModelLearning.plot_flexi(final_params_derepr_flexi.flex1_params, flexidir)
 
@@ -129,11 +129,11 @@ for cond in conditions
     # println("="^40 * "\n")
 end
 
-# ── RMSE Normalized Summary Table ─────────────────────────────────────────────
+# ── RMSE Summary Table ─────────────────────────────────────────────
 all_rmse = Dict{String, Dict{String, Float64}}()
 for cond in conditions
-    @load joinpath(expdir, "rmse_normed_dict_$(cond).jld2") rmse_normed_dict
-    all_rmse[cond] = rmse_normed_dict
+    @load joinpath(expdir, "rmse_dict_$(cond).jld2") rmse_dict
+    all_rmse[cond] = rmse_dict
 end
  
 col_width = 22
@@ -142,7 +142,7 @@ keys_per_cond = ["classical", "classical_simplex", "flexi"]
  
 sep = "="^(9 + col_width * 3 + 3)
 println("\n" * sep)
-println("RMSE Normalized Summary (all conditions)")
+println("RMSE Summary (all conditions)")
 println(sep)
 println(rpad("Cond", 9) * join([lpad(h, col_width) for h in header_labels]))
 println("-"^(9 + col_width * 3 + 3))
