@@ -5,8 +5,28 @@ using OptimizationBBO
 using Statistics
 using JLD2
 
+#(A) TODO: which files can be combined into 1 file?
+#   (1) I think I can combine all the SingleLig files into one (classicalSingleLig.jl, flexiSingleLig.jl, flexiSingleLigO1.jl)
+#   (2) need to add some "configuration" info at the beginning explicating which kinds of training to run --> see "todo" tags in (B3-4)
+#       (a) every time I do flexi, I do also do classical first and end up saving both --> need a tag to say if I want to "continue" to flexi training
+#       (b) both classical and flexi will be modified based on which outputs are being used for fitting
+#(B) TODO: which things do I modify each time? 
+#   (1) data loading
+#   (2) parentdir #TODO: would be useful to makedirs if they don't already exist. print warnings if they already exist though (avoid overwriting old files on accident)
+#   (3) DONE: add some reference for which outputs are included in the data
+#       (a) TODO: implement using this tag (add keyword argument to makeModel__())
+#           (iii) TODO: try everything first with just modifications to classical model and training.
+#   (4) DONE: add some reference for if I want to flexi fit
+#       (b) TODO: implement using this tag (wrap stuff in if blocks)
+
+
+
+parentdir = "02242026_nonsimultaneous_realData" 
+data_file = "CombiCell_data.jld2"
+outputs = [true, true] # or [true, false] (for now, want flexibility to add [false, true] later)
+flexi = false # for now
 loaddir = "./cleanData"
-@load joinpath(loaddir, "CombiCell_data.jld2") data
+@load joinpath(loaddir, data_file) data
 realLength = length(data["x"])
 
 conditions = ["00", "10", "01", "11"]
@@ -20,7 +40,8 @@ for cond in conditions
     )
 end
 
-parentdir = "02242026_nonsimultaneous_realData"
+
+
 
 for cond in conditions
     data_subset = subsets[cond]
