@@ -9,7 +9,8 @@ struct ModelCombiClassic <: AbstractClassicalModel
     
 end
 
-function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
+function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing, output1 = true, output2 = true)
+    #TODO: refactor so that we can choose o1 or o2 to be excluded from training
    # close initial guess 
     p_base_derepresented_ig = ComponentArray(
         fI=0.5,
@@ -74,6 +75,7 @@ function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
         XO1=1.0,
         O1max=1.0,
         O2max=200.0,
+        # TODO: if output is false, then set associated param to 0
         # O2max=0.0
         # extraCD2 = 1.0; # have to change how handling later
         # extraPD1 = 200.0
@@ -178,6 +180,9 @@ function fw(x::Vector{Float64}, kD::Vector{Float64}, p_class, model::ModelCombiC
 
         O1i = O1max * O1_val 
         O2i = O2max * O2_val # add this back for o2 fitting
+        
+        # TODO: if output is false, then set associated O#i to 0
+
         # O2i = 0.0 # for o1 only
 
         push!(O1, O1i)
