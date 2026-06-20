@@ -21,7 +21,7 @@ using JLD2
 
 
 
-parentdir = "../CombiCellLocal/experiments/06172026_sepLigFits_" 
+parentdir = "../CombiCellLocal/experiments/06182026_sepLigFits" 
 data_file = "CombiCell_data_O1only_min0_noKD162.jld2"
 outputs = [true, false] # or [true, false] (for now, want flexibility to add [false, true] later)
 flexi = false # for now
@@ -75,35 +75,53 @@ for cond in conditions
     )
 end
 
-
+# make a function for setting up savedir, making the model, making the learning problem
+function set_up_1lig_model(dir, cond, maker, data_subset)
+    # data_subset = subsets[cond]
+    savedir = joinpath(dir, cond)
+    isdir(savedir) || mkdir(savedir)
+    model = maker(; output1 = outputs[1], output2 = outputs[2])
+    learning_problem = CombiCellModelLearning.LearningProblem(data = data_subset,
+        model = model,
+        p_repr_lb=CombiCellModelLearning.represent(model.p_derepresented_lowerbounds, model.intPoints, model),
+        p_repr_ub=CombiCellModelLearning.represent(model.p_derepresented_upperbounds, model.intPoints, model),
+        mask=trues(realLength),
+        loss_strategy=my_loss_strategy
+    )
+    return savedir, model, learning_problem
+end
 
 # classical training
 for cond in conditions
     data_subset = subsets[cond]
-    # dirName = cond * data_description
-    savedir = joinpath(classical_dir, cond)
-    isdir(savedir) || mkdir(savedir)
-    model = CombiCellModelLearning.make_ModelCombiClassic(; output1 = outputs[1], output2 = outputs[2])
-    p_repr_ig = deepcopy(model.params_repr_ig)
+    # # dirName = cond * data_description
+    # savedir = joinpath(classical_dir, cond)
+    # isdir(savedir) || mkdir(savedir)
+    # model_classical = CombiCellModelLearning.make_ModelCombiClassic(; output1 = outputs[1], output2 = outputs[2])
+    # p_repr_ig = deepcopy(model_classical.params_repr_ig)
 
-    learning_problem = CombiCellModelLearning.LearningProblem(
-        data=data_subset,
-        model=model,
-        p_repr_lb=CombiCellModelLearning.represent(model.p_derepresented_lowerbounds, model.intPoints, model),
-        p_repr_ub=CombiCellModelLearning.represent(model.p_derepresented_upperbounds, model.intPoints, model),
-        mask=trues(realLength),
-        loss_strategy=my_loss_strategy)
+    # learning_problem_classical = CombiCellModelLearning.LearningProblem(
+    #     data=data_subset,
+    #     model=model_classical,
+    #     p_repr_lb=CombiCellModelLearning.represent(model.p_derepresented_lowerbounds, model.intPoints, model),
+    #     p_repr_ub=CombiCellModelLearning.represent(model.p_derepresented_upperbounds, model.intPoints, model),
+    #     mask=trues(realLength),
+    #     loss_strategy=my_loss_strategy)
+    savedir_classical, model_classical, learning_problem_classical = set_up_1lig_model(classical_dir, cond, CombiCellModelLearning.make_ModelCombiClassic, data_subset)
 
-    final_params_repr, loss_history = CombiCellModelLearning.bbo_learn_single(learning_problem, p_repr_ig, model.intPoints)
-    final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, model.intPoints, model)
+    p_repr_ig = deepcopy(model_classical.params_repr_ig)
 
-    @save joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
-    @save joinpath(savedir, "loss_history.jld2") loss_history
-    @save joinpath(savedir, "model.jld2") model
+    classical_params_repr, classical_loss_history = CombiCellModelLearning.bbo_learn_single(learning_problem_classical, p_repr_ig, model_classical.intPoints)
+    classical_params_derepr = CombiCellModelLearning.derepresent_all(classical_params_repr, model_classical.intPoints, model_classical)
 
-    p_class = final_params_derepr.p_classical
+    @save joinpath(savedir_classical, "final_params_derepr.jld2") classical_params_derepr
+    @save joinpath(savedir_classical, "loss_history.jld2") classical_loss_history
+    @save joinpath(savedir_classical, "model.jld2") model_classical
+
+    # plotting, getting metrics for classical
+    p_class = classical_params_derepr.p_classical
     all_metrics, fitData = CombiCellModelLearning.generate_all_plots_single(
-        data_subset, p_class, loss_history, savedir, model; o1_only = true
+        data_subset, p_class, classical_loss_history, savedir_classical, model_classical; o1_only = true
     )
 
     println("\n" * "="^40)
@@ -119,4 +137,9 @@ for cond in conditions
         println("  O2 RMSE      $(round(all_metrics["RMSE_O2"], digits=6))")
     end
     println("="^40 * "\n")
+
+# simplex training
+
+# if flexi, then flexi training
 end
+
