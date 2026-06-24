@@ -24,7 +24,8 @@ using JLD2
 parentdir = "../CombiCellLocal/experiments/06182026_sepLigFits" 
 data_file = "CombiCell_data_O1only_min0_noKD162.jld2"
 outputs = [true, false] # or [true, false] (for now, want flexibility to add [false, true] later)
-flexi = false # for now
+flexi = true # for now
+my_reference_rmse = 0.0123
 
 # make parentdir if it doesn't exist yet, give warning if it already exists
 if isdir(parentdir)
@@ -75,6 +76,7 @@ for cond in conditions
     )
 end
 
+# helper functions 
 # make a function for setting up savedir, making the model, making the learning problem
 function set_up_1lig_model(dir, cond, maker, data_subset)
     # data_subset = subsets[cond]
@@ -91,55 +93,151 @@ function set_up_1lig_model(dir, cond, maker, data_subset)
     return savedir, model, learning_problem
 end
 
+# should be transferable to 12x12 simultaneous lig fitting
+function learn_save_model(p_repr_ig, savedir, learning_problem, learning_protocol; single = false)
+    final_params_repr, loss_history = learning_protocol(learning_problem, p_repr_ig, learning_problem.model.intPoints; single = single)
+    final_params_derepr = CombiCellModelLearning.derepresent_all(final_params_repr, learning_problem.model.intPoints, learning_problem.model)
+    model = learning_problem.model
+
+    
+    @save joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
+    @save joinpath(savedir, "loss_history.jld2") loss_history
+    @save joinpath(savedir, "model.jld2") model
+
+
+    return final_params_repr, final_params_derepr, loss_history, model
+end
+
+# should be transferable to 12x12 simultaneous lig fitting
+function flexi_learn_save(p_repr_flexi, savedir, learning_problem; num_swaps = 3, single = false) 
+    loss_history =[]
+    for i=1:num_swaps
+        # println("check intpoints: $(learning_problem.model.intPoints)")
+        # println("Starting CMA-ES optimization with initial loss: $(simplex_loss_history[end])")
+        p_repr_flexi, cmaes_loss_i = CombiCellModelLearning.cmaes_learn(learning_problem, p_repr_flexi, learning_problem.model.intPoints; upper_bound_multiplier=10.0, single=single)
+        push!(loss_history, cmaes_loss_i...)
+        p_repr_flexi, simplex_loss_i = CombiCellModelLearning.simplex_learn(learning_problem, p_repr_flexi, learning_problem.model.intPoints; single = single)
+        push!(loss_history, simplex_loss_i...)
+        println("Flexi fitting loss after cycle $i: $(loss_history[end])")
+    end
+    final_params_derepr = CombiCellModelLearning.derepresent_all(p_repr_flexi, learning_problem.model.intPoints, learning_problem.model)
+    model = learning_problem.model
+
+    @save joinpath(savedir, "final_params_derepr.jld2") final_params_derepr
+    @save joinpath(savedir, "loss_history.jld2") loss_history
+    @save joinpath(savedir, "model.jld2") model
+
+    return final_params_derepr, loss_history, model
+end
+
+# helper function: save to .txt a table of RMSEs (not normed) for classical-DE, classical-DE-NM, and flexi for each ligand condition
+function rmse_table_1lig(parentdir, conditions, ref)
+    classical_dir = joinpath(parentdir, "classical-DE")
+    simplex_dir   = joinpath(parentdir, "classical-DE-NM")
+    flexi_dir     = joinpath(parentdir, "flexi-DE-NM-CMAES")
+    include_flexi = isdir(flexi_dir)
+
+    # helper: load RMSE for a given condition subdirectory
+    function load_rmse(dir, cond)
+        metrics_path = joinpath(dir, cond, "model_metrics_single.jld2")
+        if isfile(metrics_path)
+            @load metrics_path metrics_dict
+            return metrics_dict["RMSE"]
+        else
+            return NaN
+        end
+    end
+
+    col_headers = include_flexi ?
+        ["Condition", "Classical-DE", "Classical-DE-NM", "Flexi-DE-NM-CMAES"] :
+        ["Condition", "Classical-DE", "Classical-DE-NM"]
+    col_width = 20
+
+    lines = String[]
+    push!(lines, "RMSE Summary (reference RMSE = $(round(ref, digits=6)))")
+    push!(lines, "="^(col_width * length(col_headers)))
+    push!(lines, join(rpad.(col_headers, col_width)))
+    push!(lines, "-"^(col_width * length(col_headers)))
+
+    for cond in conditions
+        rmse_classical = load_rmse(classical_dir, cond)
+        rmse_simplex   = load_rmse(simplex_dir,   cond)
+        vals = [cond, string(round(rmse_classical, digits=6)), string(round(rmse_simplex, digits=6))]
+        if include_flexi
+            rmse_flexi = load_rmse(flexi_dir, cond)
+            push!(vals, string(round(rmse_flexi, digits=6)))
+        end
+        push!(lines, join(rpad.(vals, col_width)))
+    end
+
+    push!(lines, "="^(col_width * length(col_headers)))
+
+    out_path = joinpath(parentdir, "rmse_summary.txt")
+    open(out_path, "w") do f
+        foreach(line -> println(f, line), lines)
+    end
+    println("RMSE table saved to $out_path")
+end
+
+# compute reference rmses
+
 # classical training
 for cond in conditions
     data_subset = subsets[cond]
-    # # dirName = cond * data_description
-    # savedir = joinpath(classical_dir, cond)
-    # isdir(savedir) || mkdir(savedir)
-    # model_classical = CombiCellModelLearning.make_ModelCombiClassic(; output1 = outputs[1], output2 = outputs[2])
-    # p_repr_ig = deepcopy(model_classical.params_repr_ig)
-
-    # learning_problem_classical = CombiCellModelLearning.LearningProblem(
-    #     data=data_subset,
-    #     model=model_classical,
-    #     p_repr_lb=CombiCellModelLearning.represent(model.p_derepresented_lowerbounds, model.intPoints, model),
-    #     p_repr_ub=CombiCellModelLearning.represent(model.p_derepresented_upperbounds, model.intPoints, model),
-    #     mask=trues(realLength),
-    #     loss_strategy=my_loss_strategy)
+   
     savedir_classical, model_classical, learning_problem_classical = set_up_1lig_model(classical_dir, cond, CombiCellModelLearning.make_ModelCombiClassic, data_subset)
 
     p_repr_ig = deepcopy(model_classical.params_repr_ig)
 
-    classical_params_repr, classical_loss_history = CombiCellModelLearning.bbo_learn_single(learning_problem_classical, p_repr_ig, model_classical.intPoints)
-    classical_params_derepr = CombiCellModelLearning.derepresent_all(classical_params_repr, model_classical.intPoints, model_classical)
-
-    @save joinpath(savedir_classical, "final_params_derepr.jld2") classical_params_derepr
-    @save joinpath(savedir_classical, "loss_history.jld2") classical_loss_history
-    @save joinpath(savedir_classical, "model.jld2") model_classical
-
+    final_params_repr_classical, final_params_derepr_classical, loss_history_classical, model_classical = learn_save_model(p_repr_ig, savedir_classical, learning_problem_classical, CombiCellModelLearning.bbo_learn, single = true)
     # plotting, getting metrics for classical
-    p_class = classical_params_derepr.p_classical
-    all_metrics, fitData = CombiCellModelLearning.generate_all_plots_single(
-        data_subset, p_class, classical_loss_history, savedir_classical, model_classical; o1_only = true
+  
+    all_metrics_classical, fitData_classical = CombiCellModelLearning.generate_all_plots_single(
+        data_subset, final_params_derepr_classical, loss_history_classical, savedir_classical, model_classical; o1_only = true
     )
 
     println("\n" * "="^40)
     println("Classical (DE) Condition $cond RMSE Summary")
     println("="^40)
-    println("  RMSE      $(round(all_metrics["RMSE"], digits=6))")
-    println("  Normed RMSE:       $(round(all_metrics["RMSE_normed"], digits=6))")
+    println("  RMSE      $(round(all_metrics_classical["RMSE"], digits=6))")
+    println("  Normed RMSE:       $(round(all_metrics_classical["RMSE_normed"], digits=6))")
     #  println("  Combined RMSE: $(round(all_metrics["RMSE_combined"], digits=6))")
-    println("  Bias:          $(round(all_metrics["bias"], digits=6))")
+    println("  Bias:          $(round(all_metrics_classical["bias"], digits=6))")
 
     if outputs[1] && outputs[2]
-        println("  O1 RMSE      $(round(all_metrics["RMSE_O1"], digits=6))")
-        println("  O2 RMSE      $(round(all_metrics["RMSE_O2"], digits=6))")
+        println("  O1 RMSE      $(round(all_metrics_classical["RMSE_O1"], digits=6))")
+        println("  O2 RMSE      $(round(all_metrics_classical["RMSE_O2"], digits=6))")
     end
     println("="^40 * "\n")
 
-# simplex training
+    # simplex training
+    println("Starting simplex optimization with initial loss: $(loss_history_classical[end])")
 
-# if flexi, then flexi training
+    savedir_simplex, model_simplex, learning_problem_simplex = set_up_1lig_model(simplex_dir, cond, CombiCellModelLearning.make_ModelCombiClassic, data_subset)
+    final_params_repr_simplex, final_params_derepr_simplex, loss_history_simplex, model_simplex = learn_save_model(final_params_repr_classical, savedir_simplex, learning_problem_simplex, CombiCellModelLearning.simplex_learn, single = true)
+    all_metrics_simplex, fitData_simplex = CombiCellModelLearning.generate_all_plots_single(
+        data_subset, final_params_derepr_simplex, loss_history_simplex, savedir_simplex, model_simplex; o1_only = true
+    )
+    # if flexi, then flexi training
+    println("what are intpoints for classical: $(model_classical.intPoints)")
+    
+
+    savedir_flexi, model_flexi, learning_problem_flexi = set_up_1lig_model(flexi_dir, cond, CombiCellModelLearning.make_ModelCombiFlexi_O1, data_subset) #Flexi_O1 means that the eqn that is flexi is the O1 eqn
+    println("what are intpoints for flexi: $(model_flexi.intPoints)")
+    println("Starting CMA-ES optimization with initial loss: $(loss_history_simplex[end])")
+        
+    p_repr_flexi = CombiCellModelLearning.convert_params(final_params_repr_simplex, model_flexi)
+
+    final_params_derepr_flexi, loss_history_flexi, model_flexi = flexi_learn_save(p_repr_flexi, savedir_flexi, learning_problem_flexi; single = true)
+    all_metrics_flexi, fitData_flexi = CombiCellModelLearning.generate_all_plots_single(
+        data_subset, final_params_derepr_flexi, loss_history_flexi, savedir_flexi, model_flexi; o1_only = true
+    )
+
+    CombiCellModelLearning.plot_flexi(final_params_derepr_flexi.flex1_params, savedir_flexi)
+
+
 end
+
+rmse_table_1lig(parentdir, conditions, my_reference_rmse)
+
 

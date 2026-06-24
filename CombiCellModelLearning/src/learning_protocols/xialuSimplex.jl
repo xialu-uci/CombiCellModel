@@ -1,10 +1,14 @@
 
-function simplex_learn(learning_problem, p_repr_ig, intPoints)
+function simplex_learn(learning_problem, p_repr_ig, intPoints; single = false)
 
     function obj_func(x, p)
         p_repr = CombiCellModelLearning.reconstruct_learning_params_from_array(x, p_repr_ig,learning_problem.model) # this is where params are updated # the trick is the x is the actual params we want. 
         # only pass through p_repr_ig for the keys
-        return CombiCellModelLearning.get_loss(p_repr, intPoints; learning_problem=learning_problem)
+        if single
+            return CombiCellModelLearning.get_single_loss(p_repr, intPoints; learning_problem=learning_problem)
+        else
+            return CombiCellModelLearning.get_loss(p_repr, intPoints; learning_problem=learning_problem)
+        end
     end
     # initial guess params array
     classical_params_array = collect(values(copy(p_repr_ig.p_classical)))

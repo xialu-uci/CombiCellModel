@@ -166,7 +166,7 @@ function fw(x::Vector{Float64}, kD::Vector{Float64}, p_all_derepresented, model:
         X = CN^nC / (lambdaX^nC + CN^nC)
 
         O1_val = X / (XO1 + X)
-        # O2_val = X
+        O2_val = X
 
     
         O1i = O1max  *abs(FlexiFunctions.evaluate_decompress(abs(O1_val), p_all_derepresented.flex1_params)) 
