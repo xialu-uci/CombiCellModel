@@ -9,7 +9,8 @@ struct ModelCombiClassic <: AbstractClassicalModel
     
 end
 
-function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
+function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing, output1 = true, output2 = true)
+    #done: refactor so that we can choose o1 or o2 to be excluded from training
    # close initial guess 
     p_base_derepresented_ig = ComponentArray(
         fI=0.5,
@@ -22,9 +23,11 @@ function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
         lambdaX=0.08, #(0.03,0.1)
         nC=2.0, #(1.5,2.5)
         XO1=0.5, #(0.3,0.7)
-        O1max=0.8, #(0.7,1.0)
+        #O1max=0.8, #(0.7,1.0)
+        O1max = output1 ? 0.8 : 0.0,
+        O2max = output2 ? 100.0 : 0.0
         #O2max=100.0, #(80,120)
-        O2max=0.0
+        # O2max=0.0
         # extraCD2 = 0.97,
         # extraPD1 = 70.0
     )
@@ -48,9 +51,11 @@ function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
         lambdaX=1e-5,
         nC=0.01 ,
         XO1=0.01,
-        O1max=0.1,
-        #O2max=10.0,
-        O2max=0.0
+        # O1max=0.1,
+        # O2max=10.0,
+        O1max = output1 ? 0.1 : 0.0,
+        O2max = output2 ? 10.0 : 0.0
+        # O2max=0.0
         # extraCD2 = 0.5, # have to change how handling this later
         # extraPD1 = 20.0
     )
@@ -72,9 +77,12 @@ function make_ModelCombiClassic(;intPoint1 = nothing, intPoint2 = nothing)
         lambdaX=1000.0,
         nC=5.0,
         XO1=1.0,
-        O1max=1.0,
-        #O2max=200.0,
-        O2max=0.0
+        # O1max=1.0,
+        # O2max=200.0,
+        O1max = output1 ? 1.0 : 0.0,
+        O2max = output2 ? 200.0 : 0.0
+        # done: if output is false, then set associated param to 0
+        # O2max=0.0
         # extraCD2 = 1.0; # have to change how handling later
         # extraPD1 = 200.0
     )
@@ -174,11 +182,18 @@ function fw(x::Vector{Float64}, kD::Vector{Float64}, p_class, model::ModelCombiC
         X = CN^nC / (lambdaX^nC + CN^nC)
 
         O1_val = X / (XO1 + X)
-        # O2_val = X # add back for o2 fitting
-
+        O2_val = X # add back for o2 fitting
         O1i = O1max * O1_val 
-        # O2i = O2max * O2_val # add this back for o2 fitting
-        O2i = 0.0
+        O2i = O2max * O2_val  # add this back for o2 fitting
+        # will be forced to be 0.0 if o2max is 0.0
+      
+
+        # O1i = output1 ? O1max * O1_val : 0.0 
+        # O2i = output2 ? O2max * O2_val : 0.0 # add this back for o2 fitting
+      
+        # done: if output is false, then set associated O#i to 0
+
+        # O2i = 0.0 # for o1 only
 
         push!(O1, O1i)
         push!(O2, O2i)

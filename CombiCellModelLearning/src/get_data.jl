@@ -81,5 +81,19 @@ function get_data_O1(; save_data = false)
     return data
     
 
+end
+
+function rm_bad_kd(raw_data, save_name; bad_kd = 162.0, save_data = false)
+    # find all datapoints with bad kd
+    bad_idx = findall(raw_data["KD"].== bad_kd)
+    # remove all bad data points
+    data = Dict(k => deleteat!(copy(v), bad_idx) for (k, v) in raw_data)
+
+    if save_data
+        base_path = "/home/xialu/Documents/W25/AllardRotation/CombiCellLocal/"
+        @save joinpath(base_path, save_name) data
+    end
+
+    return data
 
 end
